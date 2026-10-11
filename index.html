@@ -118,6 +118,54 @@
     transition: opacity .3s;
   }
   .toast.off { opacity: 0; pointer-events: none; }
+
+  /* ---------- My mantras dropdown ---------- */
+  .fold-head {
+    display: flex; align-items: center; gap: 8px; width: 100%; padding: 2px 0; background: none;
+    color: var(--muted); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; text-align: left;
+  }
+  .fold-head .cnt {
+    background: var(--panel2); color: var(--gold); border-radius: 999px; padding: 2px 8px;
+    font-size: 12px; letter-spacing: 0; text-transform: none;
+  }
+  .fold-head .chev { margin-left: auto; font-size: 18px; transition: transform .3s ease; }
+  .fold.closed .fold-head .chev { transform: rotate(-90deg); }
+  .fold-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .3s ease, opacity .3s ease; }
+  .fold.closed { gap: 0; }
+  .fold.closed .fold-body { grid-template-rows: 0fr; opacity: 0; }
+  .fold-body > div { overflow: hidden; }
+  .saved { max-height: 300px; overflow-y: auto; padding: 2px; }
+
+  /* ---------- interaction feedback ---------- */
+  button, .saved-item, .ring-box { transition: transform .18s ease, box-shadow .2s ease, filter .2s ease, background-color .2s ease, border-color .2s ease, color .2s ease, opacity .2s ease; }
+  :where(button:not(:disabled)):active { transform: scale(.96); }
+  button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  @media (hover: hover) {
+    :where(button:not(:disabled)):hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.35); background-color: #4a2e18; }
+    :where(button:not(:disabled)):active { transform: scale(.96); box-shadow: none; }
+    button.primary:not(:disabled):hover { background-color: #ffad55; box-shadow: 0 8px 24px rgba(255,153,51,.35); }
+    button.primary.on:not(:disabled):hover { background-color: #ff8475; box-shadow: 0 8px 24px rgba(255,107,91,.35); }
+    button.ghost:not(:disabled):hover { background-color: rgba(255,153,51,.1); color: var(--ink); box-shadow: none; }
+    .chip:hover { background-color: #5a3a1e; }
+    .chip.sel:hover { background-color: #ffad55; }
+    .mode:hover { border-color: rgba(255,153,51,.5); background-color: #45291a; }
+    .mode:hover .ic { transform: scale(1.15) rotate(-6deg); }
+    .mode.sel:hover { border-color: var(--saffron); background-color: #553218; }
+    .saved-item:hover { border-color: rgba(255,153,51,.6); background-color: #24150b; transform: translateX(3px); }
+    .saved-item button:hover, .fold-head:hover { transform: none; box-shadow: none; background-color: transparent; }
+    .saved-item .txt:hover { color: var(--gold); }
+    .saved-item .del:hover { color: var(--warn); transform: scale(1.2); }
+    .fold-head:hover { color: var(--ink); }
+    .fold-head:hover .chev { color: var(--saffron); }
+    .ring-box:hover { transform: scale(1.02); filter: drop-shadow(0 0 18px rgba(255,153,51,.25)); }
+    .tapbtn:not(:disabled):hover { background-color: transparent; transform: translateY(-2px); box-shadow: 0 8px 0 #9a520c, 0 12px 30px rgba(255,153,51,.35); }
+    .tapbtn:not(:disabled):active { transform: translateY(4px); box-shadow: 0 2px 0 #9a520c; }
+  }
+  .mode .ic { transition: transform .25s ease; }
+  .ring-box:active { transform: scale(.98); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  }
 </style>
 </head>
 <body>
@@ -126,9 +174,11 @@
 <div class="wrap" id="setup">
   <h1>ॐ Mantra Jaap</h1>
 
-  <div class="card">
-    <h3>My mantras</h3>
-    <div class="saved" id="savedList"></div>
+  <div class="card fold" id="savedFold">
+    <button class="fold-head" id="foldHead" aria-expanded="true" aria-controls="savedBody">
+      <span>My mantras</span><span class="cnt" id="savedCount">0</span><span class="chev">▾</span>
+    </button>
+    <div class="fold-body" id="savedBody"><div><div class="saved" id="savedList"></div></div></div>
   </div>
 
   <div class="card">
@@ -259,9 +309,18 @@
   }
 
   // ================= SETUP SCREEN =================
+  function setFold(open) {
+    state.savedOpen = open; save();
+    $('savedFold').classList.toggle('closed', !open);
+    $('foldHead').setAttribute('aria-expanded', open);
+  }
+  $('foldHead').onclick = () => setFold($('savedFold').classList.contains('closed'));
+  setFold(state.savedOpen !== false);
+
   function renderSaved() {
     const list = $('savedList');
     list.innerHTML = '';
+    $('savedCount').textContent = state.saved.length;
     if (!state.saved.length) {
       const p = document.createElement('div');
       p.className = 'empty'; p.textContent = 'No saved mantras yet. Type one below and tap “Save”.';
@@ -301,7 +360,7 @@
     const target = currentTarget();
     const existing = state.saved.find((s) => s.text === text);
     if (existing) existing.target = target; else state.saved.unshift({ text, target });
-    save(); renderSaved(); toast('Saved to my mantras 🙏');
+    save(); renderSaved(); setFold(true); toast('Saved to my mantras 🙏');
   };
 
   function selectMode(m) {
