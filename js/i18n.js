@@ -174,6 +174,8 @@ export const STRINGS = {
     syncError: 'Could not reach your account. Changes are kept on this device.',
     saveSettings: 'Save settings',
     settingsSaved: 'Settings saved ✓',
+    savedState: 'Saved',
+    notSaved: 'Changes not saved — tap Save settings to keep them',
   },
 
   hi: {
@@ -349,6 +351,8 @@ export const STRINGS = {
     syncError: 'आपका खाता नहीं मिल सका। बदलाव इस फ़ोन पर सहेजे हैं।',
     saveSettings: 'सेटिंग्स सहेजें',
     settingsSaved: 'सेटिंग्स सहेज ली गईं ✓',
+    savedState: 'सहेजा हुआ',
+    notSaved: 'बदलाव सहेजे नहीं गए — रखने के लिए “सेटिंग्स सहेजें” दबाएँ',
   },
 
   mr: {
@@ -524,5 +528,7 @@ export const STRINGS = {
     syncError: 'तुमचे खाते मिळाले नाही. बदल या फोनवर जतन आहेत.',
     saveSettings: 'सेटिंग्ज जतन करा',
     settingsSaved: 'सेटिंग्ज जतन झाल्या ✓',
+    savedState: 'जतन केलेले',
+    notSaved: 'बदल जतन झाले नाहीत — ठेवण्यासाठी “सेटिंग्ज जतन करा” दाबा',
   },
 };

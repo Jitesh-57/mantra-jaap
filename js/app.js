@@ -105,14 +105,15 @@ if (!THEMES[S.theme]) S.theme = 'saffron';
 if (S.dim === 0.5) S.dim = 0.2; // earlier default hid wallpapers too much
 let wpData = null;
 if (keepSettings()) { try { wpData = localStorage.getItem(WP_KEY); } catch (e) {} }
-let guestNudged = false;
+// Changes apply straight away but are only kept when "Save settings" is pressed.
+let savedSnapshot = '';
+const settingsSnapshot = () => JSON.stringify([S, S.wallpaper === 'custom' ? wpData : null]);
+const settingsDirty = () => settingsSnapshot() !== savedSnapshot;
 function saveSettings() {
-  if (AUTH_ON && !user && !read(SIGNED_KEY)) {
-    if (!guestNudged) { guestNudged = true; toast(t('guestToast')); }
-    return;
-  }
-  store(SET_KEY, S);
-  queueCloudSave();
+  const dirty = settingsDirty();
+  const b = $('setSave');
+  b.classList.toggle('dirty', dirty);
+  b.querySelector('span').textContent = dirty ? t('saveSettings') : t('savedState');
 }
 
 const itemById = (id) => st.items.find((i) => i.id === id);
@@ -226,6 +227,7 @@ function closeSheet(el) {
   if (!el || el.hidden) return;
   el.hidden = true;
   openSheets.splice(openSheets.indexOf(el), 1);
+  if (el.id === 'setSheet' && settingsDirty()) toast(t('notSaved'));
   if (!openSheets.length) document.body.classList.remove('locked');
   lastFocus?.focus?.({ preventScroll: true });
 }
@@ -1079,7 +1081,12 @@ async function share(it) {
 }
 
 // ============ settings ============
-function openSettings() { renderSettings(); openSheet('setSheet'); }
+function openSettings() {
+  savedSnapshot = settingsSnapshot();
+  renderSettings();
+  saveSettings();
+  openSheet('setSheet');
+}
 function renderSettings() {
   $$('#uiLangSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === S.uiLang));
   $$('#fontSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === S.font));
@@ -1095,6 +1102,7 @@ function renderSettings() {
   $('dim').value = S.dim;
   $('dimLabel').textContent = t('dim', { n: Math.round(S.dim * 100) });
   $('dimRow').hidden = S.wallpaper === 'none' || (S.wallpaper === 'custom' && !wpData);
+  saveSettings(); // keep the Save button's state in step
 
   const ts = $('themeSw');
   ts.textContent = '';
@@ -1146,10 +1154,12 @@ $('colorsReset').onclick = () => { S.bg = ''; S.text = ''; S.hl = ''; saveSettin
 $('ts').addEventListener('input', (e) => { S.ts = +e.target.value; $('tsLabel').textContent = t('textSize', { n: S.ts }); saveSettings(); applyTheme(); });
 $('dim').addEventListener('input', (e) => { S.dim = +e.target.value; $('dimLabel').textContent = t('dim', { n: Math.round(S.dim * 100) }); saveSettings(); applyTheme(); });
 $('setSave').onclick = async () => {
+  if (!settingsDirty()) { closeSheet('setSheet'); return; }
   // guests cannot keep settings: invite them to sign in instead
-  if (AUTH_ON && !user && !read(SIGNED_KEY)) { closeSheet('setSheet'); openAuth(); return; }
+  if (AUTH_ON && !user && !read(SIGNED_KEY)) { savedSnapshot = settingsSnapshot(); closeSheet('setSheet'); openAuth(); return; }
   store(SET_KEY, S);
   if (S.wallpaper === 'custom' && wpData) store(WP_KEY, wpData);
+  savedSnapshot = settingsSnapshot();
   clearTimeout(cloudTimer);
   await pushCloud();
   closeSheet('setSheet');

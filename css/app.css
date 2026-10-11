@@ -311,6 +311,10 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 .sheet-head { display: flex; align-items: center; gap: 8px; margin: 0 -8px 12px 0; }
 .sheet-head h2 { flex: 1; margin: 0; font-size: 20px; line-height: 1.25; }
 .sheet .stack { gap: 18px; }
+/* Save settings: quiet until something changes */
+#setSave:not(.dirty) { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--line); box-shadow: none; }
+#setSave.dirty { animation: wake .5s var(--ease); box-shadow: 0 6px 24px color-mix(in srgb, var(--accent) 45%, transparent); }
+@keyframes wake { 0% { transform: scale(.97); filter: brightness(.8); } 60% { transform: scale(1.02); filter: brightness(1.12); } }
 /* action that stays visible at the bottom of a long sheet */
 .sheet-foot {
   position: sticky; bottom: calc(-24px - env(safe-area-inset-bottom)); z-index: 2;
