@@ -367,6 +367,17 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 .preview-line .w.cur { background: var(--hl); color: var(--hl-ink); }
 .divider { height: 1px; background: var(--line); margin: 4px 0; }
 
+/* ============ wallpaper: let it show through the panels ============ */
+body.has-wp .hero, body.has-wp .list, body.has-wp .tile, body.has-wp .reader, body.has-wp .stats,
+body.has-wp .strip, body.has-wp .segmented, body.has-wp .fab, body.has-wp .icon-btn.boxed {
+  background-color: color-mix(in srgb, var(--surface) 58%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+}
+body.has-wp .appbar, body.has-wp .action-bar { background-color: color-mix(in srgb, var(--bg) 35%, transparent); }
+body.has-wp .appbar { box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--bg) 35%, transparent); }
+body.has-wp .action-bar { border-top-color: color-mix(in srgb, var(--line) 50%, transparent); }
+body.has-wp .practice.long .reader { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+
 /* ============ accounts ============ */
 .account-btn { flex: none; margin-right: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; font-weight: 600; font-size: 15px; background: var(--surface-2); border: 1px solid var(--line); color: var(--text); transition: background-color .15s, transform .15s var(--ease); }
 .account-btn.signed { padding: 0; width: 42px; min-height: 42px; border: 0; background: none; }

@@ -12,7 +12,6 @@ const SIGNED_KEY = 'mantra-jaap-signed-in';
 const AUTH_ON = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 let cloud = null; // Supabase connection, once loaded
 let user = null;  // signed-in user, or null for guests
-const DEFAULT_MANTRA = 'ॐ श्री देवकृष्णाय उर्ध्वान्तकाय नमः ।';
 const PRESETS = [1, 11, 21, 27, 54, 108, 1008];
 const TESS = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/';
 const TESS_CORE = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1';
@@ -43,7 +42,7 @@ const THEMES = {
   forest:   { name: 'thForest',   bg: '#0b140e', surface: '#122017', surface2: '#1a2c20', line: '#264030', text: '#e3f1e6', text2: '#8fb59a', accent: '#4fbf7a', accentInk: '#06140b', gold: '#e3cf6a' },
 };
 const omTile = 'url("data:image/svg+xml,' + encodeURIComponent(
-  "<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><text x='60' y='76' font-size='46' text-anchor='middle' fill='#f08a24' fill-opacity='0.09' font-family='serif'>ॐ</text></svg>") + '")';
+  "<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><text x='60' y='76' font-size='46' text-anchor='middle' fill='#f08a24' fill-opacity='0.2' font-family='serif'>ॐ</text></svg>") + '")';
 const WALLPAPERS = {
   none: { name: 'wpNone' },
   sunrise: { name: 'wpSunrise', css: 'linear-gradient(170deg, #4a1606 0%, #a8410d 40%, #e89a3c 62%, #1c0c05 100%)' },
@@ -88,14 +87,13 @@ function loadState() {
     for (const k of ['day', 'todayCount', 'total', 'gap', 'sens', 'minLen', 'wpm']) if (v2[k] != null) st[k] = v2[k];
     if (v2.savedOpen === false) st.libOpen = false;
   } else if (v1) st.total = v1.total || 0;
-  if (!st.items.length) st.items.push({ ...newItem(DEFAULT_MANTRA, '', 108), updated: 0 });
   return st;
 }
 const st = loadState();
 if (st.day !== todayKey()) { st.day = todayKey(); st.todayCount = 0; }
 const save = () => { store(KEY, st); queueCloudSave(); };
 
-const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'saffron', bg: '', text: '', hl: '', wallpaper: 'none', dim: 0.5, ts: 26, font: 'classic' };
+const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'saffron', bg: '', text: '', hl: '', wallpaper: 'none', dim: 0.2, ts: 26, font: 'classic' };
 // Settings are kept only for signed-in people; guests start from the defaults each visit.
 const keepSettings = () => !AUTH_ON || !!read(SIGNED_KEY);
 const S = { ...DEFAULT_SETTINGS, ...(keepSettings() ? read(SET_KEY) || {} : {}) };
@@ -104,6 +102,7 @@ delete S.ink;
 if (!STRINGS[S.uiLang]) { const l = (navigator.language || '').slice(0, 2); S.uiLang = STRINGS[l] ? l : 'en'; }
 if (!LANGS[S.voiceLang]) S.voiceLang = 'hi';
 if (!THEMES[S.theme]) S.theme = 'saffron';
+if (S.dim === 0.5) S.dim = 0.2; // earlier default hid wallpapers too much
 let wpData = null;
 if (keepSettings()) { try { wpData = localStorage.getItem(WP_KEY); } catch (e) {} }
 let guestNudged = false;
@@ -118,6 +117,15 @@ function saveSettings() {
 
 const itemById = (id) => st.items.find((i) => i.id === id);
 const currentItem = () => itemById(st.currentId);
+
+// "Jaap today" and "All-time" belong to each mantra, so resetting one leaves the others alone
+const itemToday = (it) => (it.todayDay === todayKey() ? it.todayN || 0 : 0);
+const todayAll = () => st.items.reduce((n, it) => n + itemToday(it), 0);
+if (!st.items.some((i) => 'total' in i)) {
+  // earlier versions kept one shared tally; give it to the mantra in use
+  const c = currentItem() || st.items[0];
+  if (c) { c.total = st.total || 0; if (st.day === todayKey()) { c.todayN = st.todayCount || 0; c.todayDay = st.day; } }
+}
 
 // ============ i18n ============
 function t(k, vars) {
@@ -198,6 +206,7 @@ function applyTheme() {
     body.backgroundSize = wp.tile ? 'auto, 120px 120px' : 'cover';
     body.backgroundRepeat = wp.tile ? 'repeat' : 'no-repeat';
   }
+  document.body.classList.toggle('has-wp', !!(wp && wp.css));
 }
 
 // ============ sheets ============
@@ -231,7 +240,8 @@ document.addEventListener('keydown', (e) => {
 
 // ============ home ============
 function renderHome() {
-  $('todayLine').textContent = st.todayCount ? t('todayLine', { n: st.todayCount }) : t('todayNone');
+  const today = todayAll();
+  $('todayLine').textContent = today ? t('todayLine', { n: today }) : t('todayNone');
   const cur = currentItem();
   $('hero').hidden = !cur;
   if (cur) {
@@ -604,9 +614,11 @@ $('pShare').onclick = () => share(P.item);
 $('pSettings').onclick = openSettings;
 $('pTune').onclick = () => { renderTuneLabels(); openSheet('tuneSheet'); };
 $('resetBtn').onclick = () => {
-  if (!P.item.count && !P.item.rounds) return;
+  const it = P.item;
+  if (!it.count && !it.rounds && !itemToday(it) && !it.total) return;
   if (!confirm(t('resetConfirm'))) return;
-  P.item.count = 0; P.item.rounds = 0; save(); renderCount();
+  Object.assign(it, { count: 0, rounds: 0, todayN: 0, total: 0 });
+  save(); renderCount();
 };
 
 // ----- reader -----
@@ -952,7 +964,8 @@ document.addEventListener('keydown', (e) => {
 let resetHighlightTimer = 0;
 function add(opts = {}) {
   const it = P.item;
-  it.count++; st.todayCount++; st.total++; it.updated = Date.now();
+  if (it.todayDay !== todayKey()) { it.todayDay = todayKey(); it.todayN = 0; }
+  it.count++; it.todayN++; it.total = (it.total || 0) + 1; it.updated = Date.now();
   let complete = false;
   if (it.count >= it.target) {
     it.rounds++; it.count = 0; complete = true;
@@ -980,8 +993,8 @@ function undo() {
   if (it.count > 0) it.count--;
   else if (it.rounds > 0) { it.rounds--; it.count = it.target - 1; }
   else return;
-  st.todayCount = Math.max(0, st.todayCount - 1);
-  st.total = Math.max(0, st.total - 1);
+  if (itemToday(it) > 0) it.todayN--;
+  it.total = Math.max(0, (it.total || 0) - 1);
   save();
   renderCount();
 }
@@ -1020,12 +1033,12 @@ function renderCount(bump, complete) {
   $('sRound').textContent = it.rounds;
   $('mCount').textContent = shown;
   $('mOf').textContent = t('recitations', { c: shown, t: it.target });
-  $('mSub').textContent = t('stripSub', { r: it.rounds, n: st.todayCount });
+  $('mSub').textContent = t('stripSub', { r: it.rounds, n: itemToday(it) });
   $('miniArc').style.strokeDashoffset = (131.95 * (1 - shown / it.target)).toFixed(2);
   renderPlanPill($('sPlan'), it, true);
   renderPlanPill($('mPlan'), it, false);
-  $('sToday').textContent = st.todayCount;
-  $('sTotal').textContent = st.total;
+  $('sToday').textContent = itemToday(it);
+  $('sTotal').textContent = it.total || 0;
   const frac = shown / it.target;
   $('arc').style.strokeDashoffset = (578 * (1 - frac)).toFixed(1);
   const lit = Math.floor(frac * beads.length);
@@ -1215,7 +1228,6 @@ function afterSignOut() {
   try { [SIGNED_KEY, SET_KEY, WP_KEY, KEY].forEach((k) => localStorage.removeItem(k)); } catch (e) {}
   // this device goes back to a fresh guest state; everything stays in the account
   Object.assign(st, freshState());
-  st.items.push({ ...newItem(DEFAULT_MANTRA, '', 108), updated: 0 });
   store(KEY, st);
   const lang = S.uiLang;
   Object.assign(S, DEFAULT_SETTINGS, { uiLang: lang });
