@@ -2,6 +2,7 @@ import { STRINGS } from './i18n.js';
 import { createTracker, wordKey } from './align.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { connect } from './cloud.js';
+import { NATIVE, WEB_URL, AUTH_CALLBACK, startNativeSpeech, nativeShare, onBackButton, exitApp, onAppLink, openExternal, closeExternal, nativeKeepAwake } from './native.js';
 
 // ============ constants ============
 const KEY = 'mantra-jaap-v3';
@@ -16,6 +17,7 @@ const PRESETS = [1, 11, 21, 27, 54, 108, 1008];
 const TESS = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/';
 const TESS_CORE = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1';
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const HAS_SR = !!SR || NATIVE; // the Android app uses the phone's own speech recogniser
 const ANDROID = /Android/i.test(navigator.userAgent);
 
 const LANGS = {
@@ -601,7 +603,7 @@ function startPractice(item, mode) {
   buildRing();
   renderCount();
   let g = st.guide || 'voice';
-  if (g === 'voice' && !SR) g = 'pace';
+  if (g === 'voice' && !HAS_SR) g = 'pace';
   setGuide(g, false);
 }
 function leavePractice() {
@@ -693,7 +695,7 @@ $('reader').addEventListener('click', (e) => {
 
 // ----- highlight guide -----
 function setGuide(g, persist = true) {
-  if (g === 'voice' && !SR) { toast(t('noSR')); g = 'pace'; }
+  if (g === 'voice' && !HAS_SR) { toast(t('noSR')); g = 'pace'; }
   stopAll();
   P.guide = g;
   if (persist) { st.guide = g; save(); }
@@ -710,12 +712,27 @@ $('wpm').addEventListener('input', (e) => { st.wpm = +e.target.value; $('paceLab
 
 // ----- follow voice -----
 let rec = null, recWanted = false, heardLen = 0, endTimer = 0, renderQueued = false;
+let nativeRec = null;
 
 function startRecognition() {
-  if (!SR) { setLive(t('noSR'), 'err'); return false; }
+  if (!HAS_SR) { setLive(t('noSR'), 'err'); return false; }
   recWanted = true;
+  if (NATIVE) { startNativeRecognition(); return true; }
   spawnRecognizer();
   return true;
+}
+function startNativeRecognition() {
+  startNativeSpeech(LANGS[S.voiceLang].sr, {
+    onSession: () => { P.tracker.newSession(); heardLen = 0; },
+    onWords: (words) => { if (recWanted) onHeard(words); },
+    onSpeaking: (on) => $('live').classList.toggle('speaking', on),
+    onError: () => { stopAll(); setLive(t('micDenied'), 'err'); },
+  }).then((r) => {
+    if (recWanted) nativeRec = r; else r.stop();
+  }).catch((e) => {
+    stopAll();
+    setLive(e?.code === 'not-allowed' ? t('micDenied') : t('noSR'), 'err');
+  });
 }
 function spawnRecognizer() {
   const r = new SR();
@@ -747,6 +764,7 @@ function stopRecognition() {
   const r = rec;
   rec = null;
   if (r) { try { r.abort(); } catch (e) {} }
+  if (nativeRec) { nativeRec.stop(); nativeRec = null; }
   $('live').classList.remove('speaking');
   $('heard').textContent = '';
 }
@@ -869,6 +887,7 @@ function stopRhythm() {
 // ----- start / stop -----
 let wakeLock = null;
 async function keepAwake(on) {
+  if (NATIVE) return nativeKeepAwake(on);
   try {
     if (on && 'wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
     else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
@@ -1065,7 +1084,7 @@ for (const k of ['gap', 'sens', 'minLen']) {
 
 // ============ share ============
 function shareUrl(it) {
-  const base = location.origin + location.pathname.replace(/index\.html$/, '');
+  const base = NATIVE ? WEB_URL : location.origin + location.pathname.replace(/index\.html$/, '');
   const q = new URLSearchParams({ m: it.text, n: it.target });
   if (it.title) q.set('t', it.title);
   return base + '?' + q.toString();
@@ -1074,6 +1093,7 @@ async function share(it) {
   if (!it) return;
   const url = shareUrl(it);
   try {
+    if (NATIVE) { await nativeShare({ title: it.title || t('brand'), text: (it.title || it.text.slice(0, 120)) + ' · ' + t('timesN', { n: it.target }), url }); return; }
     if (navigator.share) { await navigator.share({ title: it.title || t('brand'), text: (it.title || it.text.slice(0, 120)) + ' · ' + t('timesN', { n: it.target }), url }); return; }
   } catch (e) { if (e?.name === 'AbortError') return; }
   try { await navigator.clipboard.writeText(url); toast(t('linkCopied')); }
@@ -1365,7 +1385,10 @@ $('recoverForm').addEventListener('submit', async (e) => {
 async function initAccounts() {
   renderAccount();
   if (!AUTH_ON) return;
-  try { cloud = await connect(SUPABASE_URL, SUPABASE_ANON_KEY); }
+  const env = NATIVE
+    ? { linkBack: WEB_URL, oauthBack: AUTH_CALLBACK, openExternal } // Google blocks sign-in inside apps: use the browser
+    : { linkBack: location.origin + location.pathname, oauthBack: location.origin + location.pathname };
+  try { cloud = await connect(SUPABASE_URL, SUPABASE_ANON_KEY, env); }
   catch (e) { console.error(e); $('accountBtn').hidden = true; return; }
   const signedIn = async (u) => {
     if (!u || user?.id === u.id) return;
@@ -1375,6 +1398,13 @@ async function initAccounts() {
     await afterSignIn();
     if (fresh) toast(t('welcome'));
   };
+  if (NATIVE) {
+    onAppLink(async (url) => {
+      if (!url.startsWith(AUTH_CALLBACK)) return;
+      closeExternal();
+      try { await cloud.finishOAuth(url); } catch (e) { toast(e.message || String(e)); }
+    });
+  }
   cloud.onChange((event, u) => {
     if (event === 'PASSWORD_RECOVERY') { user = u; openAuth('recover'); return; }
     if (u) signedIn(u);
@@ -1384,6 +1414,15 @@ async function initAccounts() {
   if (!user && read(SIGNED_KEY)) { // the session ended elsewhere
     try { localStorage.removeItem(SIGNED_KEY); } catch (e) {}
   }
+}
+
+// Android back button: close a panel, leave practice, then exit
+if (NATIVE) {
+  onBackButton(() => {
+    if (openSheets.length) closeSheet(openSheets[openSheets.length - 1]);
+    else if (!$('practice').hidden) leavePractice();
+    else exitApp();
+  });
 }
 
 // ============ start ============

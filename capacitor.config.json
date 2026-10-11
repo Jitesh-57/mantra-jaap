@@ -1,0 +1,11 @@
+{
+  "appId": "com.sjpt.mantrajaap",
+  "appName": "Mantra Jaap",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#140c07"
+  },
+  "plugins": {
+    "SystemBars": { "insetsHandling": "css", "style": "DARK", "initialViewportFitValueHint": "cover" }
+  }
+}
