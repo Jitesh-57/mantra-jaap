@@ -70,6 +70,70 @@ export const LIBRARY = [
 त्वमेव सर्वं मम देव देव ॥` },
 
   // ---------------- chalisa ----------------
+  { id: 'mahalakshmi', lang: 'sa', cat: 'mantra', title: 'महालक्ष्मी मंत्र', en: 'Mahalakshmi Mantra (Om Shreem Hreem Shreem)', deity: 'Lakshmi', tags: 'mahalakshmi laxmi lakshmi mantra om shreem hreem shreem kamale kamalalaye prasida dhan money friday diwali', target: 108,
+    text: `ॐ श्रीं ह्रीं श्रीं कमले कमलालये प्रसीद प्रसीद ।
+ॐ श्रीं ह्रीं श्रीं महालक्ष्म्यै नमः ॥` },
+  { id: 'shreem-lakshmi', lang: 'sa', cat: 'mantra', title: 'ॐ श्रीं महालक्ष्म्यै नमः', en: 'Om Shreem Mahalakshmyai Namah', deity: 'Lakshmi', tags: 'om shreem mahalakshmyai namah laxmi lakshmi beej mantra', target: 108,
+    text: `ॐ श्रीं महालक्ष्म्यै नमः ॥` },
+  { id: 'dum-durgayai', lang: 'sa', cat: 'mantra', title: 'ॐ दुं दुर्गायै नमः', en: 'Om Dum Durgayai Namah', deity: 'Durga', tags: 'om dum durgayai namah durga devi mata beej mantra navratri', target: 108,
+    text: `ॐ दुं दुर्गायै नमः ॥` },
+  { id: 'saraswati-mantra', lang: 'sa', cat: 'mantra', title: 'ॐ ऐं सरस्वत्यै नमः', en: 'Om Aim Saraswatyai Namah', deity: 'Saraswati', tags: 'om aim saraswatyai namah saraswati vidya study students beej mantra', target: 108,
+    text: `ॐ ऐं सरस्वत्यै नमः ॥` },
+  { id: 'ganesh-gayatri', lang: 'sa', cat: 'mantra', title: 'गणेश गायत्री मंत्र', en: 'Ganesh Gayatri Mantra (Ekadantaya Vidmahe)', deity: 'Ganesha', tags: 'ganesh gayatri ekadantaya vidmahe vakratundaya dhimahi ganpati ganesha', target: 108,
+    text: `ॐ एकदन्ताय विद्महे वक्रतुण्डाय धीमहि ।
+तन्नो दन्तिः प्रचोदयात् ॥` },
+  { id: 'rudra-gayatri', lang: 'sa', cat: 'mantra', title: 'रुद्र गायत्री मंत्र', en: 'Rudra (Shiv) Gayatri Mantra (Tatpurushaya Vidmahe)', deity: 'Shiva', tags: 'rudra shiv shiva gayatri tatpurushaya vidmahe mahadevaya dhimahi', target: 108,
+    text: `ॐ तत्पुरुषाय विद्महे महादेवाय धीमहि ।
+तन्नो रुद्रः प्रचोदयात् ॥` },
+  { id: 'surya-mantra', lang: 'sa', cat: 'mantra', title: 'ॐ घृणिः सूर्याय नमः', en: 'Om Ghrini Suryaya Namah (Surya Mantra)', deity: 'Surya', tags: 'om ghrini suryaya namah surya sun sunday morning', target: 108,
+    text: `ॐ घृणिः सूर्याय नमः ॥` },
+  { id: 'shani-mantra', lang: 'sa', cat: 'mantra', title: 'ॐ शं शनैश्चराय नमः', en: 'Om Sham Shanaishcharaya Namah (Shani Mantra)', deity: 'Shani', tags: 'om sham shanaishcharaya namah shani saturday shanidev', target: 108,
+    text: `ॐ शं शनैश्चराय नमः ॥` },
+  { id: 'shani-beej', lang: 'sa', cat: 'mantra', title: 'शनि बीज मंत्र', en: 'Shani Beej Mantra (Om Pram Preem Praum)', deity: 'Shani', tags: 'shani beej mantra om pram preem praum sah shanaishcharaya namah saturday', target: 108,
+    text: `ॐ प्रां प्रीं प्रौं सः शनैश्चराय नमः ॥` },
+  { id: 'kubera', lang: 'sa', cat: 'mantra', title: 'कुबेर मंत्र', en: 'Kuber Mantra', deity: 'Kubera', tags: 'kuber kubera mantra yakshaya kuberaya vaishravanaya dhan wealth dhanteras', target: 108,
+    text: `ॐ यक्षाय कुबेराय वैश्रवणाय धनधान्याधिपतये ।
+धनधान्यसमृद्धिं मे देहि दापय स्वाहा ॥` },
+  { id: 'sai-mantra', lang: 'hi', cat: 'mantra', title: 'ॐ साईं नमो नमः', en: 'Om Sai Namo Namah', deity: 'Sai Baba', tags: 'om sai namo namah shri sai sadguru sai baba shirdi', target: 108,
+    text: `ॐ साईं नमो नमः ।
+श्री साईं नमो नमः ।
+जय जय साईं नमो नमः ।
+सद्गुरु साईं नमो नमः ॥` },
+  { id: 'swami-samarth', lang: 'mr', cat: 'mantra', title: 'श्री स्वामी समर्थ', en: 'Shri Swami Samarth', deity: 'Swami Samarth', tags: 'shri swami samarth akkalkot datta naamjap marathi', target: 108,
+    text: `श्री स्वामी समर्थ` },
+  { id: 'digambara', lang: 'mr', cat: 'mantra', title: 'दिगंबरा दिगंबरा श्रीपाद वल्लभ दिगंबरा', en: 'Digambara Digambara Shripad Vallabh Digambara', deity: 'Dattatreya', tags: 'digambara digambar shripad vallabh datta dattatreya gurudev datta marathi', target: 108,
+    text: `दिगंबरा दिगंबरा श्रीपाद वल्लभ दिगंबरा` },
+  { id: 'ram-krishna-hari', lang: 'mr', cat: 'mantra', title: 'राम कृष्ण हरी', en: 'Ram Krishna Hari (Varkari naamjap)', deity: 'Vitthal', tags: 'ram krishna hari jay jay varkari vitthal vithoba pandharpur marathi', target: 108,
+    text: `राम कृष्ण हरी` },
+  { id: 'rama-rameti', lang: 'sa', cat: 'mantra', title: 'श्री राम राम रामेति', en: 'Shri Ram Ram Rameti', deity: 'Rama', tags: 'shri ram ram rameti rame rame manorame sahasranama ram naam', target: 11,
+    text: `श्री राम राम रामेति रमे रामे मनोरमे ।
+सहस्रनाम तत्तुल्यं रामनाम वरानने ॥` },
+  { id: 'manojavam', lang: 'sa', cat: 'mantra', title: 'मनोजवं मारुततुल्यवेगं', en: 'Manojavam Marutatulyavegam (Hanuman shloka)', deity: 'Hanuman', tags: 'manojavam marutatulyavegam hanuman shloka shriramdootam sharanam prapadye', target: 11,
+    text: `मनोजवं मारुततुल्यवेगं जितेन्द्रियं बुद्धिमतां वरिष्ठम् ।
+वातात्मजं वानरयूथमुख्यं श्रीरामदूतं शरणं प्रपद्ये ॥` },
+  { id: 'shantakaram', lang: 'sa', cat: 'mantra', title: 'शान्ताकारं भुजगशयनं', en: 'Shantakaram Bhujagashayanam (Vishnu dhyana)', deity: 'Vishnu', tags: 'shantakaram shantakaram bhujagashayanam vishnu dhyan shloka', target: 11,
+    text: `शान्ताकारं भुजगशयनं पद्मनाभं सुरेशम् ।
+विश्वाधारं गगनसदृशं मेघवर्णं शुभाङ्गम् ।
+लक्ष्मीकान्तं कमलनयनं योगिभिर्ध्यानगम्यम् ।
+वन्दे विष्णुं भवभयहरं सर्वलोकैकनाथम् ॥` },
+  { id: 'karpur-gauram', lang: 'sa', cat: 'mantra', title: 'कर्पूरगौरं करुणावतारं', en: 'Karpur Gauram Karunavataram', deity: 'Shiva', tags: 'karpur gauram karpoor gauram karunavataram shiv shiva shloka aarti', target: 11,
+    text: `कर्पूरगौरं करुणावतारं संसारसारं भुजगेन्द्रहारम् ।
+सदा वसन्तं हृदयारविन्दे भवं भवानीसहितं नमामि ॥` },
+  { id: 'sarva-mangala', lang: 'sa', cat: 'mantra', title: 'सर्वमङ्गलमाङ्गल्ये', en: 'Sarva Mangala Mangalye', deity: 'Durga', tags: 'sarva mangala mangalye shive sarvartha sadhike durga devi narayani namostute', target: 11,
+    text: `सर्वमङ्गलमाङ्गल्ये शिवे सर्वार्थसाधिके ।
+शरण्ये त्र्यम्बके गौरि नारायणि नमोऽस्तु ते ॥` },
+  { id: 'ya-devi', lang: 'sa', cat: 'mantra', title: 'या देवी सर्वभूतेषु', en: 'Ya Devi Sarvabhuteshu', deity: 'Durga', tags: 'ya devi sarvabhuteshu shakti rupena samsthita namastasyai durga devi navratri', target: 11,
+    text: `या देवी सर्वभूतेषु शक्तिरूपेण संस्थिता ।
+नमस्तस्यै नमस्तस्यै नमस्तस्यै नमो नमः ॥` },
+  { id: 'vasudeva-sutam', lang: 'sa', cat: 'mantra', title: 'वसुदेवसुतं देवं', en: 'Vasudeva Sutam Devam', deity: 'Krishna', tags: 'vasudeva sutam devam kansa chanura mardanam krishnam vande jagadgurum shloka', target: 11,
+    text: `वसुदेवसुतं देवं कंसचाणूरमर्दनम् ।
+देवकीपरमानन्दं कृष्णं वन्दे जगद्गुरुम् ॥` },
+  { id: 'shubham-karoti', lang: 'sa', cat: 'mantra', title: 'शुभं करोति कल्याणम्', en: 'Shubham Karoti Kalyanam (lamp prayer)', deity: 'Deep Jyoti', tags: 'shubham karoti kalyanam deep jyoti lamp diya evening sandhya prayer', target: 1,
+    text: `शुभं करोति कल्याणम् आरोग्यं धनसंपदा ।
+शत्रुबुद्धिविनाशाय दीपज्योतिर्नमोऽस्तु ते ॥` },
+  { id: 'brahmarpanam', lang: 'sa', cat: 'mantra', title: 'ब्रह्मार्पणं ब्रह्म हविः', en: 'Brahmarpanam (Bhojan Mantra, Gita 4.24)', deity: 'Brahman', tags: 'brahmarpanam brahma havir bhojan mantra food meal prayer gita', target: 1,
+    text: `ब्रह्मार्पणं ब्रह्म हविर्ब्रह्माग्नौ ब्रह्मणा हुतम् ।
+ब्रह्मैव तेन गन्तव्यं ब्रह्मकर्मसमाधिना ॥` },
   { id: 'hanuman-chalisa', lang: 'hi', cat: 'chalisa', title: 'हनुमान चालीसा', en: 'Hanuman Chalisa', deity: 'Hanuman', tags: 'hanuman chalisa bajrang bali tulsidas jai hanuman gyan gun sagar', target: 1,
     text: `श्रीगुरु चरन सरोज रज निज मनु मुकुरु सुधारि ।
 बरनउँ रघुबर बिमल जसु जो दायकु फल चारि ॥
@@ -489,6 +553,48 @@ export const LIBRARY = [
 श्रीधरं माधवं गोपिकावल्लभं जानकीनायकं रामचंद्रं भजे ॥` },
 
   // ---------------- other traditions ----------------
+  { id: 'shiv-panchakshar', lang: 'sa', cat: 'stuti', title: 'शिवपञ्चाक्षर स्तोत्रम्', en: 'Shiv Panchakshar Stotram (Nagendraharaya)', deity: 'Shiva', tags: 'shiv panchakshar stotram nagendraharaya trilochanaya shiva shankaracharya namah shivaya', target: 1,
+    text: `नागेन्द्रहाराय त्रिलोचनाय भस्माङ्गरागाय महेश्वराय ।
+नित्याय शुद्धाय दिगम्बराय तस्मै नकाराय नमः शिवाय ॥१॥
+
+मन्दाकिनीसलिलचन्दनचर्चिताय नन्दीश्वरप्रमथनाथमहेश्वराय ।
+मन्दारपुष्पबहुपुष्पसुपूजिताय तस्मै मकाराय नमः शिवाय ॥२॥
+
+शिवाय गौरीवदनाब्जवृन्दसूर्याय दक्षाध्वरनाशकाय ।
+श्रीनीलकण्ठाय वृषध्वजाय तस्मै शिकाराय नमः शिवाय ॥३॥
+
+वसिष्ठकुम्भोद्भवगौतमार्यमुनीन्द्रदेवार्चितशेखराय ।
+चन्द्रार्कवैश्वानरलोचनाय तस्मै वकाराय नमः शिवाय ॥४॥
+
+यक्षस्वरूपाय जटाधराय पिनाकहस्ताय सनातनाय ।
+दिव्याय देवाय दिगम्बराय तस्मै यकाराय नमः शिवाय ॥५॥
+
+पञ्चाक्षरमिदं पुण्यं यः पठेच्छिवसन्निधौ ।
+शिवलोकमवाप्नोति शिवेन सह मोदते ॥` },
+  { id: 'madhurashtakam', lang: 'sa', cat: 'stuti', title: 'मधुराष्टकम्', en: 'Madhurashtakam (Adharam Madhuram)', deity: 'Krishna', tags: 'madhurashtakam adharam madhuram vadanam madhuram krishna vallabhacharya madhuradhipati', target: 1,
+    text: `अधरं मधुरं वदनं मधुरं नयनं मधुरं हसितं मधुरम् ।
+हृदयं मधुरं गमनं मधुरं मधुराधिपतेरखिलं मधुरम् ॥१॥
+
+वचनं मधुरं चरितं मधुरं वसनं मधुरं वलितं मधुरम् ।
+चलितं मधुरं भ्रमितं मधुरं मधुराधिपतेरखिलं मधुरम् ॥२॥
+
+वेणुर्मधुरो रेणुर्मधुरः पाणिर्मधुरः पादौ मधुरौ ।
+नृत्यं मधुरं सख्यं मधुरं मधुराधिपतेरखिलं मधुरम् ॥३॥
+
+गीतं मधुरं पीतं मधुरं भुक्तं मधुरं सुप्तं मधुरम् ।
+रूपं मधुरं तिलकं मधुरं मधुराधिपतेरखिलं मधुरम् ॥४॥
+
+करणं मधुरं तरणं मधुरं हरणं मधुरं रमणं मधुरम् ।
+वमितं मधुरं शमितं मधुरं मधुराधिपतेरखिलं मधुरम् ॥५॥
+
+गुञ्जा मधुरा माला मधुरा यमुना मधुरा वीची मधुरा ।
+सलिलं मधुरं कमलं मधुरं मधुराधिपतेरखिलं मधुरम् ॥६॥
+
+गोपी मधुरा लीला मधुरा युक्तं मधुरं मुक्तं मधुरम् ।
+दृष्टं मधुरं शिष्टं मधुरं मधुराधिपतेरखिलं मधुरम् ॥७॥
+
+गोपा मधुरा गावो मधुरा यष्टिर्मधुरा सृष्टिर्मधुरा ।
+दलितं मधुरं फलितं मधुरं मधुराधिपतेरखिलं मधुरम् ॥८॥` },
   { id: 'navkar', lang: 'pra', cat: 'other', title: 'णमोकार मंत्र', en: 'Navkar Mantra (Jain)', deity: 'Pancha Parameshthi', tags: 'navkar namokar namaskar mantra jain namo arihantanam', target: 108,
     text: `णमो अरिहंताणं ।
 णमो सिद्धाणं ।

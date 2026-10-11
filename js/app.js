@@ -324,6 +324,7 @@ const LIB_INDEX = LIBRARY.map((e) => {
   const hay = `${e.title} ${e.en} ${e.deity} ${e.tags} ${e.text.split('\n')[0]}`;
   return { e, lower: hay.toLowerCase(), keys: hay.split(/[\s,·()/।॥—-]+/).filter(Boolean).map(wordKey).filter(Boolean) };
 });
+const exact = (ix, tokens) => tokens.every((tok) => ix.lower.includes(tok.toLowerCase()));
 function matches(ix, tokens) {
   return tokens.every((tok) => {
     if (ix.lower.includes(tok.toLowerCase())) return true;
@@ -366,7 +367,17 @@ function renderLibrary() {
   chipRow($('libCats'), Object.keys(LIB_CATS), libCat, (k) => t(LIB_CATS[k]), (k) => { libCat = k; renderLibrary(); });
   const q = $('libQuery').value.trim();
   const tokens = q.split(/\s+/).filter(Boolean);
-  const found = LIB_INDEX.filter((ix) => (libCat === 'all' || ix.e.cat === libCat) && (libLang === 'all' || ix.e.lang === libLang) && (!tokens.length || matches(ix, tokens)));
+  const pool = LIB_INDEX.filter((ix) => (libCat === 'all' || ix.e.cat === libCat) && (libLang === 'all' || ix.e.lang === libLang));
+  // exact spelling first; sound-alike matching only when nothing matches exactly
+  let found = tokens.length ? pool.filter((ix) => exact(ix, tokens)) : pool;
+  // tags are in English letters, so a query in an Indian script also matches by sound
+  if (tokens.length && (!found.length || /[^\x00-\x7f]/.test(q))) {
+    // same sound as a whole word beats "sounds a bit like"
+    const strong = (ix) => tokens.every((tok) => ix.lower.includes(tok.toLowerCase()) || ix.keys.some((w) => { const k = wordKey(tok); return k && w.cons === k.cons && similarity(k, w) >= 0.85; }));
+    const near = pool.filter((ix) => matches(ix, tokens));
+    const best = near.filter(strong);
+    found = best.length ? best : near;
+  }
   const box = $('libResults');
   box.textContent = '';
   for (const { e } of found) {
