@@ -3,4 +3,4 @@
 // the database is protected by the row-level security rules in supabase/schema.sql.
 // Leave them empty to run the app without accounts.
 export const SUPABASE_URL = 'https://lwworujvfttxkrjfrgav.supabase.co'; // shared with sjpt.io
-export const SUPABASE_ANON_KEY = '';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3d29ydWp2ZnR0eGtyamZyZ2F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDAyMDYsImV4cCI6MjA5NjQ3NjIwNn0.-v6wXpjQqVt8wy2lPYikxT-kyGMwL-4ohgqJNwnZzvQ';
