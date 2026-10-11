@@ -177,6 +177,10 @@ export const STRINGS = {
     savedState: 'Saved',
     notSaved: 'Changes not saved — tap Save settings to keep them',
     privacy: 'Privacy policy',
+    startReading: 'Start reading',
+    startChanting: 'Start chanting',
+    hintRead: 'Tap “Start reading”, then read the mantra aloud',
+    hintChant: 'Tap “Start chanting”, then chant aloud',
   },
 
   hi: {
@@ -355,6 +359,10 @@ export const STRINGS = {
     savedState: 'सहेजा हुआ',
     notSaved: 'बदलाव सहेजे नहीं गए — रखने के लिए “सेटिंग्स सहेजें” दबाएँ',
     privacy: 'गोपनीयता नीति',
+    startReading: 'पढ़ना शुरू करें',
+    startChanting: 'जाप शुरू करें',
+    hintRead: '“पढ़ना शुरू करें” दबाएँ, फिर मंत्र ज़ोर से पढ़ें',
+    hintChant: '“जाप शुरू करें” दबाएँ, फिर ज़ोर से जाप करें',
   },
 
   mr: {
@@ -533,5 +541,9 @@ export const STRINGS = {
     savedState: 'जतन केलेले',
     notSaved: 'बदल जतन झाले नाहीत — ठेवण्यासाठी “सेटिंग्ज जतन करा” दाबा',
     privacy: 'गोपनीयता धोरण',
+    startReading: 'वाचन सुरू करा',
+    startChanting: 'जप सुरू करा',
+    hintRead: '“वाचन सुरू करा” दाबा, मग मंत्र मोठ्याने वाचा',
+    hintChant: '“जप सुरू करा” दाबा, मग मोठ्याने जप करा',
   },
 };

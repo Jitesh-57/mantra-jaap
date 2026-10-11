@@ -978,14 +978,14 @@ function refreshPractice(resetLive = true) {
   mb.textContent = '';
   if (auto) {
     mb.insertAdjacentHTML('beforeend', icon(P.active ? 'stop' : 'mic'));
-    mb.append(P.active ? t('stop') : t('startListening'));
+    mb.append(P.active ? t('stop') : P.guide === 'voice' ? t('startReading') : t('startChanting'));
   } else {
     const b = document.createElement('span'); b.textContent = t('tap');
     const s = document.createElement('small'); s.textContent = t('tapHint');
     mb.append(b, s);
   }
   if (resetLive && !P.active && !P.guideActive) {
-    if (auto) setLive(t('pressStart'), '');
+    if (auto) setLive(P.guide === 'voice' ? t('hintRead') : t('hintChant'), '');
     else setLive(P.guide === 'off' ? '' : t('tapWordHint'), '');
   }
 }

@@ -431,6 +431,12 @@ body.has-wp .appbar { box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--bg) 35%
 body.has-wp .action-bar { border-top-color: color-mix(in srgb, var(--line) 50%, transparent); }
 body.has-wp .practice.long .reader { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
 
+/* keep small text and beads readable over a photo */
+body.has-wp .live, body.has-wp .ring-of, body.has-wp .ring-count, body.has-wp .pace { text-shadow: 0 1px 3px rgb(0 0 0 / .85), 0 0 12px rgb(0 0 0 / .6); }
+body.has-wp .live { color: var(--text); }
+body.has-wp .ring svg { filter: drop-shadow(0 1px 2px rgb(0 0 0 / .7)); }
+body.has-wp .bead:not(.done):not(.meru) { fill: color-mix(in srgb, var(--text) 55%, transparent); }
+
 /* ============ accounts ============ */
 .account-btn { flex: none; margin-right: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; font-weight: 600; font-size: 15px; background: var(--surface-2); border: 1px solid var(--line); color: var(--text); transition: background-color .15s, transform .15s var(--ease); }
 .account-btn.signed { padding: 0; width: 42px; min-height: 42px; border: 0; background: none; }
