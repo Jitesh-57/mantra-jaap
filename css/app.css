@@ -437,6 +437,44 @@ body.has-wp .live { color: var(--text); }
 body.has-wp .ring svg { filter: drop-shadow(0 1px 2px rgb(0 0 0 / .7)); }
 body.has-wp .bead:not(.done):not(.meru) { fill: color-mix(in srgb, var(--text) 55%, transparent); }
 
+/* ============ prayer library ============ */
+.find {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 50px; margin-top: 8px; padding: 0 16px;
+  border-radius: 16px; background: var(--surface); border: 1px solid var(--line); color: var(--text-2); font-size: 16px; text-align: left;
+  transition: border-color .15s, background-color .15s;
+}
+.find .i { color: var(--accent); }
+.add-grid { grid-template-columns: repeat(2, 1fr); }
+.sheet-panel.tall { min-height: 70dvh; }
+.search-box {
+  display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 14px; border-radius: 14px;
+  background: var(--surface-2); border: 1px solid var(--line); transition: border-color .15s, box-shadow .15s;
+}
+.search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.search-box .i { color: var(--text-2); }
+.search-box input { flex: 1; min-width: 0; border: 0; background: none; outline: none; font-size: 17px; color: var(--text); }
+.scroll-chips { display: flex; gap: 8px; overflow-x: auto; margin: 0 -20px; padding: 2px 20px; scrollbar-width: none; }
+.scroll-chips::-webkit-scrollbar { display: none; }
+.scroll-chips .chip { flex: none; min-height: 36px; padding: 0 14px; font-size: 14px; white-space: nowrap; }
+.lib-results { display: flex; flex-direction: column; gap: 2px; }
+.lib-row { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 14px; text-align: left; width: 100%; transition: background-color .15s; }
+.lib-row .item-icon { width: 40px; height: 40px; font-size: 20px; }
+.lib-row .item-text { flex: 1; }
+.lib-row .item-text small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lib-row .tag { flex: none; font-size: 12px; font-weight: 600; color: var(--text-2); background: var(--surface-2); border-radius: 999px; padding: 3px 9px; }
+.lib-row .tag.added { color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); }
+.lib-empty { padding: 14px 8px; color: var(--text-2); }
+.online { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.online .section-title { display: flex; align-items: center; gap: 6px; margin: 0; }
+.prev-text {
+  max-height: 46dvh; overflow-y: auto; padding: 14px 16px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line);
+  font-family: var(--font-read); font-size: 19px; line-height: 1.75; color: var(--read); white-space: pre-wrap;
+}
+@media (hover: hover) {
+  .find:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+  .lib-row:hover { background: var(--surface-2); }
+}
+
 /* ============ accounts ============ */
 .account-btn { flex: none; margin-right: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; font-weight: 600; font-size: 15px; background: var(--surface-2); border: 1px solid var(--line); color: var(--text); transition: background-color .15s, transform .15s var(--ease); }
 .account-btn.signed { padding: 0; width: 42px; min-height: 42px; border: 0; background: none; }

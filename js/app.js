@@ -1,5 +1,7 @@
 import { STRINGS } from './i18n.js';
-import { createTracker, wordKey } from './align.js';
+import { createTracker, wordKey, similarity } from './align.js';
+import { LIBRARY } from './library.js';
+import { searchOnline, fetchOnlineText, wikiFor, googleSearchUrl } from './online.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { connect } from './cloud.js';
 import { NATIVE, WEB_URL, AUTH_CALLBACK, startNativeSpeech, nativeShare, onBackButton, exitApp, onAppLink, openExternal, closeExternal, nativeKeepAwake } from './native.js';
@@ -151,6 +153,7 @@ function applyI18n() {
   if (!$('practice').hidden) refreshPractice();
   if (!$('setSheet').hidden) renderSettings();
   if (!$('startSheet').hidden) renderStart();
+  if (!$('libSheet').hidden) renderLibrary();
   renderTuneLabels();
   renderAccount();
 }
@@ -308,6 +311,162 @@ $('fab').onclick = openSettings;
 $('addType').onclick = () => openEditor(null);
 $('addCamera').onclick = () => $('camInput').click();
 $('addPhoto').onclick = () => $('imgInput').click();
+
+// ============ prayer library ============
+const LANG_NAMES = { sa: 'संस्कृत', hi: 'हिन्दी', mr: 'मराठी', gu: 'ગુજરાતી', bn: 'বাংলা', pa: 'ਪੰਜਾਬੀ', or: 'ଓଡ଼ିଆ', ta: 'தமிழ்', te: 'తెలుగు', kn: 'ಕನ್ನಡ', ml: 'മലയാളം', en: 'English', pra: 'प्राकृत' };
+const LIB_LANGS = ['all', 'sa', 'hi', 'mr', 'gu', 'bn', 'pa', 'or', 'ta', 'te', 'kn', 'ml', 'en'];
+const LIB_CATS = { all: 'catAll', mantra: 'catMantra', aarti: 'catAarti', chalisa: 'catChalisa', stuti: 'catStuti', other: 'catOther' };
+let libLang = 'all', libCat = 'all';
+
+// Every word of a prayer's names and first line, also as a sound key, so
+// "हनुमान", "hanuman" and "Hanumaan" all find the same prayer.
+const LIB_INDEX = LIBRARY.map((e) => {
+  const hay = `${e.title} ${e.en} ${e.deity} ${e.tags} ${e.text.split('\n')[0]}`;
+  return { e, lower: hay.toLowerCase(), keys: hay.split(/[\s,·()/।॥—-]+/).filter(Boolean).map(wordKey).filter(Boolean) };
+});
+function matches(ix, tokens) {
+  return tokens.every((tok) => {
+    if (ix.lower.includes(tok.toLowerCase())) return true;
+    const k = wordKey(tok);
+    if (!k) return true;
+    return ix.keys.some((w) => similarity(k, w) >= 0.78 || (k.cons.length >= 3 && w.cons.startsWith(k.cons)));
+  });
+}
+const onlineWiki = () => (libLang === 'all' ? wikiFor(S.voiceLang) : wikiFor(libLang));
+const inList = (text) => st.items.find((i) => i.text === text);
+
+function openLibrary(focus) {
+  renderLibrary();
+  openSheet('libSheet');
+  if (focus) setTimeout(() => $('libQuery').focus(), 280);
+}
+function chipRow(box, keys, current, label, pick) {
+  box.textContent = '';
+  for (const k of keys) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = label(k);
+    b.setAttribute('aria-pressed', k === current);
+    b.onclick = () => pick(k);
+    box.append(b);
+  }
+}
+function libRow(title, sub, tag, added, iconHtml, onClick) {
+  const row = document.createElement('button');
+  row.type = 'button'; row.className = 'lib-row';
+  row.innerHTML = `<span class="item-icon">${iconHtml}</span><span class="item-text"><b></b><small></small></span><span class="tag"></span>`;
+  row.querySelector('b').textContent = title;
+  row.querySelector('small').textContent = sub;
+  const tg = row.querySelector('.tag');
+  tg.textContent = tag; tg.classList.toggle('added', added); tg.hidden = !tag;
+  row.onclick = onClick;
+  return row;
+}
+function renderLibrary() {
+  chipRow($('libLangs'), LIB_LANGS, libLang, (k) => (k === 'all' ? t('allLangs') : LANG_NAMES[k]), (k) => { libLang = k; renderLibrary(); });
+  chipRow($('libCats'), Object.keys(LIB_CATS), libCat, (k) => t(LIB_CATS[k]), (k) => { libCat = k; renderLibrary(); });
+  const q = $('libQuery').value.trim();
+  const tokens = q.split(/\s+/).filter(Boolean);
+  const found = LIB_INDEX.filter((ix) => (libCat === 'all' || ix.e.cat === libCat) && (libLang === 'all' || ix.e.lang === libLang) && (!tokens.length || matches(ix, tokens)));
+  const box = $('libResults');
+  box.textContent = '';
+  for (const { e } of found) {
+    const added = !!inList(e.text);
+    box.append(libRow(e.title, `${e.en} · ${LANG_NAMES[e.lang]}`, added ? '✓ ' + t('added') : t(LIB_CATS[e.cat]), added,
+      isLong(e.text) ? icon('book') : 'ॐ', () => openPreview({ source: 'lib', entry: e, title: e.title, text: e.text, meta: `${e.en} · ${e.deity} · ${LANG_NAMES[e.lang]}` })));
+  }
+  if (!found.length) {
+    const p = document.createElement('p');
+    p.className = 'lib-empty'; p.textContent = t('noMatches', { q: q || '…' });
+    box.append(p);
+  }
+  const wiki = onlineWiki();
+  $('onlineBtn').disabled = !q;
+  $('onlineBtn').textContent = q ? t('onlineBtn', { lang: LANG_NAMES[wiki], q }) : t('onlineBtnEmpty', { lang: LANG_NAMES[wiki] });
+  $('googleLink').href = googleSearchUrl(q || 'aarti');
+  $('googleLink').hidden = !q;
+}
+$('libQuery').addEventListener('input', () => { $('onlineResults').textContent = ''; $('onlineNote').hidden = true; renderLibrary(); });
+$('libQuery').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !$('libResults').querySelector('.lib-row')) $('onlineBtn').click(); });
+$('findBtn').onclick = () => openLibrary(true);
+$('addLibrary').onclick = () => openLibrary(false);
+
+// ----- online (Wikisource) -----
+let onlineCtl = null;
+function onlineNote(msg, cls = '') { const n = $('onlineNote'); n.hidden = !msg; n.textContent = msg; n.className = 'note ' + cls; }
+$('onlineBtn').onclick = async () => {
+  const q = $('libQuery').value.trim();
+  if (!q) return;
+  const wiki = onlineWiki();
+  onlineCtl?.abort();
+  const ctl = (onlineCtl = new AbortController());
+  $('onlineResults').textContent = '';
+  onlineNote(t('onlineLoading'));
+  try {
+    const list = await searchOnline(q, wiki, ctl.signal);
+    if (ctl !== onlineCtl) return;
+    onlineNote(list.length ? '' : t('onlineNone', { q }));
+    for (const r of list) {
+      $('onlineResults').append(libRow(r.title, r.snippet, LANG_NAMES[r.wiki] || r.wiki, false, icon('globe'), () => openOnline(r)));
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') { console.error(e); onlineNote(t('onlineError'), 'err'); }
+  }
+};
+async function openOnline(r) {
+  openPreview({ source: 'web', title: r.title, text: '', meta: `Wikisource · ${LANG_NAMES[r.wiki] || r.wiki}` });
+  $('prevText').textContent = t('loadingText');
+  $('prevAdd').disabled = true;
+  try {
+    const page = await fetchOnlineText(r.wiki, r.title);
+    if (prev?.title !== r.title) return;
+    prev.text = page.text;
+    $('prevText').textContent = page.text;
+    $('prevAdd').disabled = !page.text;
+    renderPrevBtn();
+  } catch (e) {
+    console.error(e);
+    $('prevText').textContent = t('onlineError');
+  }
+}
+
+// ----- preview -----
+let prev = null;
+function openPreview(p) {
+  prev = p;
+  $('prevTitle').textContent = p.title;
+  $('prevMeta').textContent = p.meta;
+  $('prevText').textContent = p.text;
+  $('prevText').scrollTop = 0;
+  $('prevNote').hidden = p.source !== 'web';
+  $('prevNote').textContent = t('fromWeb');
+  $('prevAdd').disabled = false;
+  renderPrevBtn();
+  openSheet('prevSheet');
+}
+function renderPrevBtn() {
+  const b = $('prevAdd');
+  const existing = prev.text && inList(prev.text);
+  b.textContent = '';
+  b.insertAdjacentHTML('beforeend', icon(existing ? 'check' : 'plus'));
+  b.append(existing ? `${t('added')} · ${t('openAdded')}` : prev.source === 'web' ? t('editAdd') : t('addToList'));
+}
+$('prevAdd').onclick = () => {
+  if (!prev?.text) return;
+  const existing = inList(prev.text);
+  if (existing) { closeSheet('prevSheet'); closeSheet('libSheet'); openStart(existing); return; }
+  if (prev.source === 'web') { // let the user correct text from the internet before it is saved
+    closeSheet('prevSheet'); closeSheet('libSheet');
+    openEditor(null, { title: prev.title, text: prev.text }, t('fromWeb'));
+    return;
+  }
+  const it = newItem(prev.text, prev.title, prev.entry.target);
+  st.items.unshift(it);
+  save();
+  renderHome();
+  renderLibrary();
+  renderPrevBtn();
+  toast(t('addedToast'));
+};
 
 // ============ start sheet ============
 const DAY_PRESETS = [0, 7, 11, 21, 40, 108]; // 0 = no limit

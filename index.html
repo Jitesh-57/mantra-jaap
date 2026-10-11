@@ -39,6 +39,9 @@
   <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></symbol>
   <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4.2-4.2"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5a14.5 14.5 0 0 1 0 19 14.5 14.5 0 0 1 0-19z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
 </svg>
 
@@ -51,6 +54,8 @@
     </div>
     <button class="account-btn" id="accountBtn" hidden></button>
   </header>
+
+  <button class="find" id="findBtn"><svg class="i"><use href="#i-search"/></svg><span data-t="findPrayer"></span></button>
 
   <section class="hero" id="hero" hidden>
     <div class="hero-label" data-t="continueLabel"></div>
@@ -74,6 +79,7 @@
   <section class="section">
     <h2 class="section-title" data-t="addNew"></h2>
     <div class="add-grid">
+      <button class="tile" id="addLibrary"><svg class="i"><use href="#i-book"/></svg><span><b data-t="addLibrary"></b><small data-t="addLibraryHint"></small></span></button>
       <button class="tile" id="addType"><svg class="i"><use href="#i-pen"/></svg><span><b data-t="addType"></b><small data-t="addTypeHint"></small></span></button>
       <button class="tile" id="addCamera"><svg class="i"><use href="#i-camera"/></svg><span><b data-t="addCamera"></b><small data-t="addCameraHint"></small></span></button>
       <button class="tile" id="addPhoto"><svg class="i"><use href="#i-image"/></svg><span><b data-t="addPhoto"></b><small data-t="addPhotoHint"></small></span></button>
@@ -282,6 +288,40 @@
     </div>
     <div class="sheet-foot">
       <button class="btn btn-primary btn-lg btn-block" id="setSave"><svg class="i"><use href="#i-check"/></svg><span data-t="saveSettings"></span></button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="libSheet" hidden>
+  <div class="sheet-panel tall" role="dialog" aria-modal="true" aria-labelledby="libTitle">
+    <div class="grabber"></div>
+    <div class="sheet-head"><h2 id="libTitle" data-t="prayerLibrary"></h2><button class="icon-btn" data-close data-t-label="close"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="stack">
+      <label class="search-box"><svg class="i"><use href="#i-search"/></svg><input type="search" id="libQuery" enterkeyhint="search" autocomplete="off" data-t-ph="searchPh"></label>
+      <div class="scroll-chips" id="libLangs" role="group"></div>
+      <div class="scroll-chips" id="libCats" role="group"></div>
+      <div class="lib-results" id="libResults"></div>
+      <p class="note" data-t="libNote"></p>
+      <div class="online">
+        <h3 class="section-title"><svg class="i i-sm"><use href="#i-globe"/></svg> <span data-t="onlineTitle"></span></h3>
+        <button class="btn btn-secondary btn-block" id="onlineBtn"></button>
+        <p class="note" id="onlineNote" hidden></p>
+        <div class="lib-results" id="onlineResults"></div>
+        <a class="policy-link" id="googleLink" target="_blank" rel="noopener" data-t="searchGoogle"></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="prevSheet" hidden>
+  <div class="sheet-panel tall" role="dialog" aria-modal="true" aria-labelledby="prevTitle">
+    <div class="grabber"></div>
+    <div class="sheet-head"><h2 id="prevTitle"></h2><button class="icon-btn" data-close data-t-label="close"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="stack">
+      <p class="note" id="prevMeta"></p>
+      <div class="prev-text" id="prevText"></div>
+      <p class="note" id="prevNote" hidden></p>
+      <button class="btn btn-primary btn-lg btn-block" id="prevAdd"></button>
     </div>
   </div>
 </div>
