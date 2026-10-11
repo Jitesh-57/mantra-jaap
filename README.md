@@ -1,4 +1,4 @@
-# Mantra Jaap
+# JapSadhna (जपसाधना)
 
 A mantra jaap counter and prayer reader that runs entirely in the browser.
 

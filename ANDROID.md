@@ -1,4 +1,4 @@
-# Mantra Jaap for Android
+# JapSadhna for Android
 
 The Android app is the same web app (`index.html`, `css/`, `js/`) packaged with
 [Capacitor](https://capacitorjs.com). Inside the app it uses Android's own features:
@@ -17,7 +17,7 @@ The Android app is the same web app (`index.html`, `css/`, `js/`) packaged with
 
 Every push to `main` builds the app on GitHub Actions (`.github/workflows/android.yml`) and publishes it:
 
-**https://github.com/Jitesh-57/mantra-jaap/releases/latest** → `mantra-jaap.apk`
+**https://github.com/Jitesh-57/mantra-jaap/releases/latest** → `japsadhna.apk`
 
 Open that link on the phone, download, and open the file (allow "Install unknown apps" for the browser
 if Android asks). New builds install over the old one.
@@ -40,15 +40,15 @@ Needs Node 22, JDK 21 and Android Studio / Android SDK 36.
 
 1. **Create an upload key** (keep the file and passwords safe — Play needs the same key for every update):
 
-       keytool -genkeypair -v -keystore mantra-jaap-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
+       keytool -genkeypair -v -keystore japsadhna-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
 
 2. **Add GitHub secrets** (repo → Settings → Secrets and variables → Actions):
-   - `ANDROID_KEYSTORE_BASE64` – output of `base64 -w0 mantra-jaap-upload.jks`
+   - `ANDROID_KEYSTORE_BASE64` – output of `base64 -w0 japsadhna-upload.jks`
    - `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (`upload`), `ANDROID_KEY_PASSWORD`
 
-   The next build then also produces `mantra-jaap-play.aab` (in the workflow run's artifacts) for Play Console.
+   The next build then also produces `japsadhna-play.aab` (in the workflow run's artifacts) for Play Console.
 
-3. **Play Console** (one-time $25): create the app "Mantra Jaap", turn on Play App Signing, upload the `.aab`
+3. **Play Console** (one-time $25): create the app "JapSadhna", turn on Play App Signing, upload the `.aab`
    to Internal testing first.
    - Store listing artwork: `store/icon_512.png`, `store/feature_1024x500.png`, plus phone screenshots.
    - Privacy policy URL is required (the app uses the microphone, camera and accounts).

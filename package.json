@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Mantra jaap counter and prayer reader \u2014 web app and Android app (Capacitor).",
+  "description": "JapSadhna (जपसाधना): mantra jaap counter and prayer reader \u2014 web app and Android app (Capacitor).",
   "scripts": {
     "web:copy": "node scripts/copy-web.mjs",
     "android:sync": "npm run web:copy && npx cap sync android",

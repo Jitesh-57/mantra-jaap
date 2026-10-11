@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Mantra Jaap</string>
-    <string name="title_activity_main">Mantra Jaap</string>
+    <string name="app_name">JapSadhna</string>
+    <string name="title_activity_main">JapSadhna</string>
     <string name="package_name">com.sjpt.mantrajaap</string>
     <string name="custom_url_scheme">com.sjpt.mantrajaap</string>
 </resources>

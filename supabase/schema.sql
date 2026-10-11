@@ -1,4 +1,4 @@
--- Mantra Jaap: one row per user holding their mantras, counts and settings.
+-- JapSadhna: one row per user holding their mantras, counts and settings.
 -- Run this once in Supabase → SQL Editor.
 
 create table if not exists public.mantra_user_data (

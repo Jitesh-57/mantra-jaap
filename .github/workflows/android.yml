@@ -59,22 +59,25 @@ jobs:
       - name: Collect files
         run: |
           mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk dist/mantra-jaap.apk
-          if [ -f android/app/build/outputs/bundle/release/app-release.aab ]; then cp android/app/build/outputs/bundle/release/app-release.aab dist/mantra-jaap-play.aab; fi
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist/japsadhna.apk
+          cp dist/japsadhna.apk dist/mantra-jaap.apk  # keeps the old download link working
+          if [ -f android/app/build/outputs/bundle/release/app-release.aab ]; then cp android/app/build/outputs/bundle/release/app-release.aab dist/japsadhna-play.aab; fi
           ls -la dist
 
       - uses: actions/upload-artifact@v4
         with:
-          name: mantra-jaap-${{ env.VERSION_NAME }}
+          name: japsadhna-${{ env.VERSION_NAME }}
           path: dist/
 
       - name: Publish download
         uses: softprops/action-gh-release@v2
         with:
           tag_name: android-v${{ env.VERSION_NAME }}
-          name: Mantra Jaap for Android ${{ env.VERSION_NAME }}
+          name: JapSadhna (जपसाधना) for Android ${{ env.VERSION_NAME }}
           make_latest: true
-          files: dist/mantra-jaap.apk
+          files: |
+            dist/japsadhna.apk
+            dist/mantra-jaap.apk
           body: |
-            **Install on your phone:** open this page on the phone, tap **mantra-jaap.apk**, then open the downloaded file.
+            **Install on your phone:** open this page on the phone, tap **japsadhna.apk**, then open the downloaded file.
             If Android asks, allow "Install unknown apps" for your browser. New versions install over the old one.

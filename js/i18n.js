@@ -1,7 +1,7 @@
 // UI strings. Keys missing from a language fall back to English.
 export const STRINGS = {
   en: {
-    brand: 'Mantra Jaap',
+    brand: 'JapSadhna',
     todayLine: '{n} jaap today',
     todayNone: 'Begin your practice',
     continue: 'Continue',
@@ -213,7 +213,7 @@ export const STRINGS = {
   },
 
   hi: {
-    brand: 'मंत्र जाप',
+    brand: 'जपसाधना',
     todayLine: 'आज {n} जाप',
     todayNone: 'अपनी साधना शुरू करें',
     continue: 'जारी रखें',
@@ -424,7 +424,7 @@ export const STRINGS = {
   },
 
   mr: {
-    brand: 'मंत्र जप',
+    brand: 'जपसाधना',
     todayLine: 'आज {n} जप',
     todayNone: 'तुमची साधना सुरू करा',
     continue: 'पुढे चालू ठेवा',
