@@ -58,7 +58,13 @@ const $ = (id) => document.getElementById(id);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const todayKey = () => new Date().toLocaleDateString('en-CA');
 const uid = () => Math.random().toString(36).slice(2, 10);
-const isLong = (text) => /\n/.test(text.trim()) || text.trim().split(/\s+/).length > 12;
+// A mantra gets the mala-ring screen; only real prayers (many words or lines) get the reading screen.
+// Line breaks alone don't count: a short mantra is often typed or scanned on two or three lines.
+const isLong = (text) => {
+  const words = text.trim().split(/\s+/).filter((w) => /[\p{L}]/u.test(w)).length; // ignore । ॥ and verse numbers
+  const lines = text.trim().split(/\n/).filter((l) => l.trim()).length;
+  return words > 16 || lines >= 4;
+};
 const clampCount = (v, d = 108) => { const n = Math.round(Number(v)); return Number.isFinite(n) && n >= 1 ? Math.min(n, 100000) : d; };
 const icon = (name, cls = 'i') => `<svg class="${cls}"><use href="#i-${name}"/></svg>`;
 
