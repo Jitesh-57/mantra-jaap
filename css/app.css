@@ -120,9 +120,8 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 /* ============ home ============ */
 .brand { display: flex; align-items: center; gap: 12px; flex: 1; padding-left: 8px; }
 .logo {
-  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; flex: none;
-  background: linear-gradient(140deg, var(--accent), var(--gold)); color: var(--accent-ink);
-  font-family: var(--font-read); font-size: 24px; line-height: 1; padding-top: 3px;
+  display: block; width: 42px; height: 42px; border-radius: 12px; flex: none;
+  background: #fefdf9; object-fit: cover; box-shadow: 0 1px 6px rgb(0 0 0 / .25);
 }
 .brand b { display: block; font-size: 20px; line-height: 1.1; }
 .brand small { color: var(--text-2); font-size: 14px; }
@@ -494,7 +493,7 @@ body.has-wp .bead:not(.done):not(.meru) { fill: color-mix(in srgb, var(--text) 5
 .callout p { margin: 0; font-size: 14px; }
 .callout .btn { align-self: flex-start; min-height: 40px; }
 .brand-sm { gap: 10px; padding-left: 0; min-width: 0; }
-.brand-sm .logo { width: 32px; height: 32px; border-radius: 10px; font-size: 18px; }
+.brand-sm .logo { width: 32px; height: 32px; border-radius: 9px; }
 .brand-sm b { font-size: 16px; }
 .brand-sm small { font-size: 12px; }
 @media (hover: hover) { .account-btn:not(.signed):hover { background: color-mix(in srgb, var(--surface-2) 85%, var(--text)); } }

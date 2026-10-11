@@ -3,7 +3,7 @@ import { cpSync, rmSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 
 rmSync('www', { recursive: true, force: true });
 mkdirSync('www/js/vendor', { recursive: true });
-for (const path of ['index.html', 'privacy.html', 'css', 'js']) cpSync(path, `www/${path}`, { recursive: true });
+for (const path of ['index.html', 'privacy.html', 'css', 'js', 'img']) cpSync(path, `www/${path}`, { recursive: true });
 
 // The Android bridge has no registerPlugin(); Capacitor's core script adds it.
 // It must load before the app's module, and only inside the app (not on the website).
