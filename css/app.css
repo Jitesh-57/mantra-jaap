@@ -377,6 +377,49 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 .preview-line .w.cur { background: var(--hl); color: var(--hl-ink); }
 .divider { height: 1px; background: var(--line); margin: 4px 0; }
 
+/* ============ practice animations ============ */
+/* highlight that glides between words */
+.reader .w { position: relative; z-index: 1; }
+.hl-pill {
+  position: absolute; left: 0; top: 0; z-index: 0; border-radius: .32em; pointer-events: none; opacity: 0;
+  background: var(--hl); box-shadow: 0 4px 18px color-mix(in srgb, var(--hl) 45%, transparent);
+  transition: transform .34s var(--ease), width .34s var(--ease), height .34s var(--ease), opacity .25s;
+}
+.hl-pill.on { opacity: 1; }
+.reader.off .hl-pill { opacity: 0; }
+.reader.pill-on:not(.off) .w.cur { background: transparent; box-shadow: none; }
+
+/* each count: number rolls up, bead pops, ripple spreads, the mantra shimmers */
+.ring-count.bump { animation: roll .5s var(--ease); }
+@keyframes roll { 0% { transform: translateY(30%) scale(.9); opacity: .15; } 55% { color: var(--gold); } 100% { transform: none; opacity: 1; } }
+.bead { transform-box: fill-box; transform-origin: center; }
+.bead.pop { animation: beadPop .65s var(--ease); }
+@keyframes beadPop { 35% { transform: scale(2.6); fill: var(--gold); } 100% { transform: scale(1); } }
+.ring .ripple { fill: none; stroke: var(--gold); stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.ring .ripple.go { animation: ripple 1s ease-out; }
+@keyframes ripple { 0% { opacity: .5; transform: scale(.6); stroke-width: 7; } 100% { opacity: 0; transform: scale(1.1); stroke-width: 1; } }
+.reader.sweep .w:not(.cur) { animation: sweep .9s ease calc(var(--i) * 70ms); }
+@keyframes sweep { 35% { color: var(--gold); text-shadow: 0 0 16px color-mix(in srgb, var(--gold) 75%, transparent); } }
+
+/* the mala breathes while listening, a little faster while you speak */
+.ring::before {
+  content: ''; position: absolute; inset: 8%; border-radius: 50%; pointer-events: none; opacity: 0;
+  box-shadow: 0 0 52px 14px color-mix(in srgb, var(--accent) 42%, transparent), inset 0 0 56px color-mix(in srgb, var(--accent) 22%, transparent);
+  transition: opacity .5s;
+}
+.ring.listening::before { opacity: .55; animation: breathe 3.4s ease-in-out infinite; }
+.ring.speaking::before { opacity: 1; animation: breathe 1.3s ease-in-out infinite; }
+@keyframes breathe { 50% { transform: scale(1.05); opacity: .3; } }
+
+/* marigold petals for a completed round */
+.petals { position: fixed; inset: 0; z-index: 65; pointer-events: none; overflow: hidden; }
+.petals i {
+  position: absolute; top: -28px; width: 13px; height: 19px; border-radius: 60% 60% 60% 60% / 85% 85% 35% 35%;
+  background: radial-gradient(circle at 40% 28%, rgb(255 255 255 / .45) 0, transparent 45%), var(--hue);
+  box-shadow: 0 2px 4px rgb(0 0 0 / .25); animation: fall linear forwards;
+}
+@keyframes fall { 15% { opacity: 1; } to { transform: translate(var(--drift), 108vh) rotate(var(--spin)); opacity: .8; } }
+
 /* ============ wallpaper: let it show through the panels ============ */
 body.has-wp .hero, body.has-wp .list, body.has-wp .tile, body.has-wp .reader, body.has-wp .stats,
 body.has-wp .strip, body.has-wp .segmented, body.has-wp .fab, body.has-wp .icon-btn.boxed {

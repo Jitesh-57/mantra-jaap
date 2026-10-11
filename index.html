@@ -118,7 +118,7 @@
     <div class="read-bar"><i id="readBar"></i></div>
   </section>
 
-  <article class="reader" id="reader" lang="sa"></article>
+  <article class="reader" id="reader" lang="sa"><span class="hl-pill" id="hlPill" aria-hidden="true"></span></article>
   <div class="live" id="live"><span class="dot"></span><span id="liveText"></span><span class="heard" id="heard"></span></div>
   <div class="meter" id="meter" hidden><i id="meterLevel"></i><u id="meterTh"></u></div>
 
@@ -126,6 +126,7 @@
     <div class="ring" id="ring" role="button" tabindex="0">
       <svg viewBox="0 0 200 200">
         <circle class="track" cx="100" cy="100" r="92"/>
+        <circle class="ripple" id="ripple" cx="100" cy="100" r="92"/>
         <circle class="arc" id="arc" cx="100" cy="100" r="92" stroke-dasharray="578" stroke-dashoffset="578"/>
         <g class="beads" id="beads"></g>
       </svg>

@@ -628,7 +628,10 @@ $('resetBtn').onclick = () => {
 // ----- reader -----
 function buildReader() {
   const box = $('reader');
+  const pill = $('hlPill');
   box.textContent = '';
+  box.append(pill);
+  pill.classList.remove('on');
   box.scrollTop = 0;
   P.words = []; P.spans = []; P.speak = []; P.lines = []; P.lineOf = []; P.curLine = -1;
   for (const line of P.item.text.split(/\r?\n/)) {
@@ -640,6 +643,7 @@ function buildReader() {
     ws.forEach((w, k) => {
       const s = document.createElement('span');
       s.className = 'w'; s.textContent = w; s.dataset.i = P.words.length;
+      s.style.setProperty('--i', P.words.length);
       ln.append(s);
       if (k < ws.length - 1) ln.append(' ');
       P.words.push(w); P.spans.push(s); P.speak.push(!!wordKey(w)); P.lineOf.push(P.lines.length - 1);
@@ -664,10 +668,28 @@ function setPos(p) {
   if (li !== P.curLine) {
     P.curLine = li;
     P.lines.forEach((el, k) => { el.className = 'line' + (k < li ? ' past' : k === li ? ' now' : ''); });
+    setTimeout(movePill, 480); // after the line finishes growing
   }
   $('readBar').style.width = (n ? (p / n) * 100 : 0) + '%';
   followWord(p);
+  movePill();
 }
+// A highlight that glides from word to word instead of jumping.
+function movePill() {
+  const pill = $('hlPill'), box = $('reader');
+  const el = P.spans[P.pos];
+  if (!el || P.guide === 'off') { pill.classList.remove('on'); return; }
+  const br = box.getBoundingClientRect(), r = el.getBoundingClientRect();
+  if (!r.width) return;
+  pill.style.transform = `translate(${r.left - br.left + box.scrollLeft - box.clientLeft}px, ${r.top - br.top + box.scrollTop - box.clientTop}px)`;
+  pill.style.width = r.width + 'px';
+  pill.style.height = r.height + 'px';
+  pill.classList.add('on');
+  box.classList.add('pill-on');
+}
+// layout can move after fonts load, text size changes or a line finishes animating
+window.addEventListener('resize', () => { if (!$('practice').hidden) movePill(); });
+document.fonts?.ready.then(() => { if (!$('practice').hidden) movePill(); });
 // keep the current word comfortably in view without jumping on every word
 function followWord(p) {
   const box = $('reader');
@@ -725,7 +747,7 @@ function startNativeRecognition() {
   startNativeSpeech(LANGS[S.voiceLang].sr, {
     onSession: () => { P.tracker.newSession(); heardLen = 0; },
     onWords: (words) => { if (recWanted) onHeard(words); },
-    onSpeaking: (on) => $('live').classList.toggle('speaking', on),
+    onSpeaking: (on) => setSpeaking(on),
     onError: () => { stopAll(); setLive(t('micDenied'), 'err'); },
   }).then((r) => {
     if (recWanted) nativeRec = r; else r.stop();
@@ -743,8 +765,8 @@ function spawnRecognizer() {
   r.interimResults = true;
   r.maxAlternatives = 1;
   r.onstart = () => { P.tracker.newSession(); heardLen = 0; };
-  r.onspeechstart = () => $('live').classList.add('speaking');
-  r.onspeechend = () => $('live').classList.remove('speaking');
+  r.onspeechstart = () => setSpeaking(true);
+  r.onspeechend = () => setSpeaking(false);
   r.onresult = (ev) => onHeard(collectWords(ev.results));
   r.onerror = (e) => {
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { stopAll(); setLive(t('micDenied'), 'err'); }
@@ -765,7 +787,7 @@ function stopRecognition() {
   rec = null;
   if (r) { try { r.abort(); } catch (e) {} }
   if (nativeRec) { nativeRec.stop(); nativeRec = null; }
-  $('live').classList.remove('speaking');
+  setSpeaking(false);
   $('heard').textContent = '';
 }
 function collectWords(results) {
@@ -862,10 +884,10 @@ async function startRhythm() {
     } else if (rms > threshold()) {
       if (!voiced) { voiced = true; voiceStart = now; voicedMs = 0; }
       lastLoud = now; voicedMs += dt;
-      $('live').classList.add('speaking');
+      setSpeaking(true);
     } else if (voiced && now - lastLoud > st.gap * 1000) {
       voiced = false;
-      $('live').classList.remove('speaking');
+      setSpeaking(false);
       const min = st.minLen * 1000;
       if (lastLoud - voiceStart >= min && voicedMs >= min * 0.4) add();
     }
@@ -927,8 +949,15 @@ function stopAll() {
 
 function setLive(text, cls) {
   const l = $('live');
-  l.className = 'live' + (cls ? ' ' + cls : '');
+  const speaking = l.classList.contains('speaking');
+  l.className = 'live' + (cls ? ' ' + cls : '') + (speaking && cls === 'on' ? ' speaking' : '');
   $('liveText').textContent = text;
+  // the mala breathes softly while the app is listening
+  $('ring').classList.toggle('listening', cls === 'on');
+}
+function setSpeaking(on) {
+  $('live').classList.toggle('speaking', on);
+  $('ring').classList.toggle('speaking', on);
 }
 function refreshPractice(resetLive = true) {
   const auto = P.mode === 'auto';
@@ -1064,11 +1093,43 @@ function renderCount(bump, complete) {
   $('arc').style.strokeDashoffset = (578 * (1 - frac)).toFixed(1);
   const lit = Math.floor(frac * beads.length);
   beads.forEach((b, i) => b.setAttribute('class', 'bead' + (i < lit ? ' done' : '') + (i === lit - 1 ? ' current' : '')));
-  if (bump) for (const c of [$('count'), $('mCount')]) { c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
+  if (bump) {
+    for (const c of [$('count'), $('mCount')]) { c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
+    replay($('ripple'), 'go');
+    if (lit > 0) replay(beads[lit - 1], 'pop');
+    if (!$('practice').classList.contains('long')) replay($('reader'), 'sweep');
+  }
   if (complete) {
     for (const [el, cls] of [[$('ring'), 'complete'], [$('strip'), 'done']]) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+    petals();
     setTimeout(() => renderCount(), 1200);
   }
+}
+
+// restart a CSS animation on an element (also SVG beads)
+function replay(el, cls) {
+  if (!el) return;
+  el.classList.remove(cls);
+  void el.getBoundingClientRect();
+  el.classList.add(cls);
+}
+// marigold petals drift down when a round is complete
+function petals() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const box = document.createElement('div');
+  box.className = 'petals';
+  for (let i = 0; i < 26; i++) {
+    const p = document.createElement('i');
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDelay = (Math.random() * 0.9).toFixed(2) + 's';
+    p.style.animationDuration = (2.4 + Math.random() * 1.6).toFixed(2) + 's';
+    p.style.setProperty('--drift', (Math.random() * 120 - 60).toFixed(0) + 'px');
+    p.style.setProperty('--spin', (Math.random() * 540 - 270).toFixed(0) + 'deg');
+    p.style.setProperty('--hue', Math.random() < 0.55 ? '#f59e0b' : Math.random() < 0.5 ? '#f97316' : '#fde047');
+    box.append(p);
+  }
+  document.body.append(box);
+  setTimeout(() => box.remove(), 5200);
 }
 
 // ----- tuning -----
