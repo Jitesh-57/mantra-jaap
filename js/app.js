@@ -1,7 +1,7 @@
 import { STRINGS } from './i18n.js';
 import { createTracker, wordKey, similarity } from './align.js';
 import { LIBRARY } from './library.js';
-import { searchOnline, fetchOnlineText, wikiFor, googleSearchUrl } from './online.js';
+import { googleSearchUrl } from './online.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { connect } from './cloud.js';
 import { NATIVE, WEB_URL, AUTH_CALLBACK, startNativeSpeech, nativeShare, onBackButton, exitApp, onAppLink, openExternal, closeExternal, nativeKeepAwake } from './native.js';
@@ -333,7 +333,6 @@ function matches(ix, tokens) {
     return ix.keys.some((w) => similarity(k, w) >= 0.78 || (k.cons.length >= 3 && w.cons.startsWith(k.cons)));
   });
 }
-const onlineWiki = () => (libLang === 'all' ? wikiFor(S.voiceLang) : wikiFor(libLang));
 const inList = (text) => st.items.find((i) => i.text === text);
 
 function openLibrary(focus) {
@@ -383,62 +382,35 @@ function renderLibrary() {
   for (const { e } of found) {
     const added = !!inList(e.text);
     box.append(libRow(e.title, `${e.en} · ${LANG_NAMES[e.lang]}`, added ? '✓ ' + t('added') : t(LIB_CATS[e.cat]), added,
-      isLong(e.text) ? icon('book') : 'ॐ', () => openPreview({ source: 'lib', entry: e, title: e.title, text: e.text, meta: `${e.en} · ${e.deity} · ${LANG_NAMES[e.lang]}` })));
+      isLong(e.text) ? icon('book') : 'ॐ', () => openPreview({ entry: e, title: e.title, text: e.text, meta: `${e.en} · ${e.deity} · ${LANG_NAMES[e.lang]}` })));
   }
   if (!found.length) {
     const p = document.createElement('p');
     p.className = 'lib-empty'; p.textContent = t('noMatches', { q: q || '…' });
     box.append(p);
   }
-  const wiki = onlineWiki();
   $('onlineBtn').disabled = !q;
-  $('onlineBtn').textContent = q ? t('onlineBtn', { lang: LANG_NAMES[wiki], q }) : t('onlineBtnEmpty', { lang: LANG_NAMES[wiki] });
-  $('googleLink').href = googleSearchUrl(q || 'aarti');
-  $('googleLink').hidden = !q;
+  $('onlineBtn').textContent = q ? t('onlineBtn', { q: googleQuery(q) }) : t('onlineBtnEmpty');
 }
-$('libQuery').addEventListener('input', () => { $('onlineResults').textContent = ''; $('onlineNote').hidden = true; renderLibrary(); });
+$('libQuery').addEventListener('input', renderLibrary);
 $('libQuery').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !$('libResults').querySelector('.lib-row')) $('onlineBtn').click(); });
 $('findBtn').onclick = () => openLibrary(true);
 $('addLibrary').onclick = () => openLibrary(false);
 
-// ----- online (Wikisource) -----
-let onlineCtl = null;
-function onlineNote(msg, cls = '') { const n = $('onlineNote'); n.hidden = !msg; n.textContent = msg; n.className = 'note ' + cls; }
-$('onlineBtn').onclick = async () => {
+// ----- online: Google search, then paste what the user copied -----
+const googleQuery = (q) => (libLang === 'all' ? q : `${q} ${LANG_NAMES[libLang]}`);
+$('onlineBtn').onclick = () => {
   const q = $('libQuery').value.trim();
   if (!q) return;
-  const wiki = onlineWiki();
-  onlineCtl?.abort();
-  const ctl = (onlineCtl = new AbortController());
-  $('onlineResults').textContent = '';
-  onlineNote(t('onlineLoading'));
-  try {
-    const list = await searchOnline(q, wiki, ctl.signal);
-    if (ctl !== onlineCtl) return;
-    onlineNote(list.length ? '' : t('onlineNone', { q }));
-    for (const r of list) {
-      $('onlineResults').append(libRow(r.title, r.snippet, LANG_NAMES[r.wiki] || r.wiki, false, icon('globe'), () => openOnline(r)));
-    }
-  } catch (e) {
-    if (e.name !== 'AbortError') { console.error(e); onlineNote(t('onlineError'), 'err'); }
-  }
+  const url = googleSearchUrl(googleQuery(q));
+  if (NATIVE) openExternal(url); else window.open(url, '_blank', 'noopener');
 };
-async function openOnline(r) {
-  openPreview({ source: 'web', title: r.title, text: '', meta: `Wikisource · ${LANG_NAMES[r.wiki] || r.wiki}` });
-  $('prevText').textContent = t('loadingText');
-  $('prevAdd').disabled = true;
-  try {
-    const page = await fetchOnlineText(r.wiki, r.title);
-    if (prev?.title !== r.title) return;
-    prev.text = page.text;
-    $('prevText').textContent = page.text;
-    $('prevAdd').disabled = !page.text;
-    renderPrevBtn();
-  } catch (e) {
-    console.error(e);
-    $('prevText').textContent = t('onlineError');
-  }
-}
+$('pasteBtn').onclick = async () => {
+  let text = '';
+  try { text = (await navigator.clipboard.readText()).trim(); } catch { /* no clipboard access: the user pastes in the editor */ }
+  closeSheet('libSheet');
+  openEditor(null, { title: text ? $('libQuery').value.trim() : '', text }, t(text ? 'pastedNote' : 'pasteHere'));
+};
 
 // ----- preview -----
 let prev = null;
@@ -448,28 +420,19 @@ function openPreview(p) {
   $('prevMeta').textContent = p.meta;
   $('prevText').textContent = p.text;
   $('prevText').scrollTop = 0;
-  $('prevNote').hidden = p.source !== 'web';
-  $('prevNote').textContent = t('fromWeb');
-  $('prevAdd').disabled = false;
   renderPrevBtn();
   openSheet('prevSheet');
 }
 function renderPrevBtn() {
   const b = $('prevAdd');
-  const existing = prev.text && inList(prev.text);
+  const existing = inList(prev.text);
   b.textContent = '';
   b.insertAdjacentHTML('beforeend', icon(existing ? 'check' : 'plus'));
-  b.append(existing ? `${t('added')} · ${t('openAdded')}` : prev.source === 'web' ? t('editAdd') : t('addToList'));
+  b.append(existing ? `${t('added')} · ${t('openAdded')}` : t('addToList'));
 }
 $('prevAdd').onclick = () => {
-  if (!prev?.text) return;
   const existing = inList(prev.text);
   if (existing) { closeSheet('prevSheet'); closeSheet('libSheet'); openStart(existing); return; }
-  if (prev.source === 'web') { // let the user correct text from the internet before it is saved
-    closeSheet('prevSheet'); closeSheet('libSheet');
-    openEditor(null, { title: prev.title, text: prev.text }, t('fromWeb'));
-    return;
-  }
   const it = newItem(prev.text, prev.title, prev.entry.target);
   st.items.unshift(it);
   save();
@@ -1661,10 +1624,10 @@ async function initAccounts() {
   }
 }
 
-// links to other sites (privacy policy, Google search): inside the Android app open them in the browser
+// the privacy policy lives on the website; inside the Android app open it in the browser
 document.addEventListener('click', (e) => {
   const a = e.target.closest('.policy-link');
-  if (a && NATIVE) { e.preventDefault(); openExternal(a.id === 'googleLink' ? a.href : WEB_URL + 'privacy'); }
+  if (a && NATIVE) { e.preventDefault(); openExternal(WEB_URL + 'privacy'); }
 });
 
 // Android back button: close a panel, leave practice, then exit
