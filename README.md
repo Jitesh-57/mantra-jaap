@@ -1,14 +1,20 @@
 # Mantra Jaap
 
-A simple mantra jaap counter that runs entirely in the browser.
+A mantra jaap counter and prayer reader that runs entirely in the browser.
 
 - **Auto counting**: chant aloud and the microphone counts each mantra (voice followed by a short pause).
 - **Tap counting**: chant in your mind and tap once per mantra.
-- Save your own mantras and set any count (11, 21, 27, 54, 108, 1008 or custom).
-- Share a link that opens with your mantra and count: `/?m=<mantra>&n=<count>`.
+- **Live word highlighting** while you read:
+  - *Follow voice*: speech recognition lights up each word as you say it; in auto mode each finished recitation counts one.
+  - *Steady pace*: words light up at an adjustable speed.
+  - Tap any word to move the highlight there.
+- **Prayer from a photo**: take or upload a photo, drag to select the text, extract it with on-device OCR (Tesseract.js), edit, and save it as a prayer.
+- **Settings** (⚙ bottom-right): app language (English / हिन्दी / मराठी), prayer language for voice and OCR (13 Indian languages), themes, screen/text/highlight colours, wallpapers (presets or your own photo), text size.
+- Save your own mantras and prayers and set any count; share a link that opens with your mantra: `/?m=<text>&n=<count>&t=<title>`.
 
-Counts and saved mantras are kept on each person's own device (localStorage).
+Counts, saved prayers and settings stay on each person's own device (localStorage).
 
 ## Deploy
 
 Static site with no build step. On Vercel: **Add New → Project → Import** this repo → **Deploy** (Framework preset: *Other*).
+Pushing to `main` updates production.

@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1a0f08">
 <title>Mantra Jaap Counter</title>
-<meta name="description" content="Count your mantra jaap — chant aloud and it counts automatically, or chant in your mind and tap.">
+<meta name="description" content="Count your mantra jaap and read prayers with live word highlighting — chant aloud for auto counting, or chant in your mind and tap.">
 <style>
   :root {
     --bg: #1a0f08;
@@ -18,38 +18,45 @@
     --bead: #5a3a1e;
     --ok: #7bd389;
     --warn: #ff6b5b;
+    --read-ink: var(--ink);
+    --hl: var(--gold);
+    --hl-ink: #1a0f08;
+    --ts: 22px;
+    --on-accent: #1a0f08;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; min-height: 100%; }
   body {
-    background: radial-gradient(circle at 50% 20%, #3a210f 0%, var(--bg) 70%) fixed;
+    background-color: var(--bg);
+    background-image: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--saffron) 14%, var(--bg)) 0%, var(--bg) 70%);
+    background-attachment: fixed; background-size: cover; background-position: center;
     color: var(--ink);
     font-family: "Noto Sans Devanagari", "Mangal", system-ui, -apple-system, sans-serif;
     display: flex; flex-direction: column; align-items: center;
-    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    padding: max(16px, env(safe-area-inset-top)) 16px calc(88px + env(safe-area-inset-bottom));
   }
-  .wrap { width: 100%; max-width: 480px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .wrap { width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .hidden { display: none !important; }
   h1 { margin: 4px 0 0; font-size: 24px; color: var(--gold); text-align: center; }
   h3 { margin: 0; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; align-self: flex-start; }
-  .card { width: 100%; background: var(--panel); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-  textarea, input[type=number] {
+  .card { width: 100%; background: color-mix(in srgb, var(--panel) 92%, transparent); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  textarea, input[type=number], input[type=text], select {
     width: 100%; font: inherit; color: var(--ink); background: var(--bg);
     border: 1px solid var(--bead); border-radius: 10px; padding: 10px 12px;
   }
   textarea { font-size: 18px; min-height: 64px; resize: vertical; line-height: 1.5; }
-  textarea:focus, input:focus { outline: 2px solid var(--saffron); outline-offset: 1px; }
+  textarea:focus, input:focus, select:focus { outline: 2px solid var(--saffron); outline-offset: 1px; }
   button {
     font: inherit; border: 0; border-radius: 12px; padding: 12px 14px; cursor: pointer;
     background: var(--panel2); color: var(--ink);
   }
   button:disabled { opacity: .45; cursor: not-allowed; }
-  button.primary { background: var(--saffron); color: #1a0f08; font-weight: 700; font-size: 18px; width: 100%; padding: 15px; }
+  button.primary { background: var(--saffron); color: var(--on-accent); font-weight: 700; font-size: 18px; width: 100%; padding: 15px; }
   button.primary.on { background: var(--warn); color: #fff; }
   button.ghost { background: transparent; color: var(--muted); padding: 8px 10px; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip { padding: 8px 12px; border-radius: 999px; background: var(--panel2); color: var(--ink); font-size: 15px; }
-  .chip.sel { background: var(--saffron); color: #1a0f08; font-weight: 700; }
+  .chip.sel { background: var(--saffron); color: var(--on-accent); font-weight: 700; }
   .saved { display: flex; flex-direction: column; gap: 8px; }
   .saved-item { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--bead); border-radius: 10px; padding: 4px 4px 4px 12px; }
   .saved-item.sel { border-color: var(--saffron); }
@@ -67,18 +74,30 @@
   .mode .ic { font-size: 30px; }
   .mode b { font-size: 16px; }
   .mode span { font-size: 12px; color: var(--muted); line-height: 1.4; }
-  .mode.sel { border-color: var(--saffron); background: #4a2c14; }
+  .mode.sel { border-color: var(--saffron); background: color-mix(in srgb, var(--panel2) 75%, var(--saffron)); }
   .hint { font-size: 13px; color: var(--muted); line-height: 1.5; text-align: center; margin: 0; }
 
   /* counter */
   .topbar { display: flex; width: 100%; align-items: center; justify-content: space-between; }
   .badge { font-size: 13px; color: var(--muted); background: var(--panel); padding: 6px 10px; border-radius: 999px; }
-  .mantra {
-    text-align: center; font-size: clamp(20px, 6vw, 28px); line-height: 1.5;
-    color: var(--gold); font-weight: 600; padding: 0 4px; overflow-wrap: anywhere;
-    text-shadow: 0 0 18px rgba(244,196,48,.25);
+  .ptitle { color: var(--gold); font-weight: 700; font-size: 18px; text-align: center; }
+  .reader {
+    position: relative; width: 100%; max-height: 42vh; overflow-y: auto; scroll-behavior: smooth;
+    text-align: center; font-size: var(--ts); line-height: 1.9; color: var(--read-ink); font-weight: 600;
+    background: color-mix(in srgb, var(--panel) 80%, transparent); border-radius: 16px; padding: 12px 10px;
+    overflow-wrap: anywhere;
   }
+  .reader .w { display: inline-block; padding: 0 4px; margin: 1px 0; border-radius: 8px; cursor: pointer; transition: background-color .2s, color .2s, opacity .25s, transform .2s, box-shadow .2s; }
+  .reader .w.read { opacity: .45; }
+  .reader .w.cur { background: var(--hl); color: var(--hl-ink); transform: scale(1.08); box-shadow: 0 0 0 3px color-mix(in srgb, var(--hl) 35%, transparent), 0 4px 14px rgba(0,0,0,.3); }
+  .reader.off .w.read { opacity: 1; }
+  .reader.off .w.cur { background: none; color: inherit; transform: none; box-shadow: none; }
+  .guide { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+  .guide .chips { justify-content: center; }
+  .guide .chip { font-size: 14px; padding: 7px 12px; }
+  .heard { min-height: 18px; font-size: 12px; color: var(--muted); opacity: .8; text-align: center; overflow-wrap: anywhere; }
   .ring-box { position: relative; width: min(80vw, 340px); aspect-ratio: 1; cursor: pointer; user-select: none; }
+  .ring-box.small { width: min(56vw, 230px); }
   .ring-box svg { width: 100%; height: 100%; display: block; }
   .bead { fill: var(--bead); transition: fill .25s; }
   .bead.done { fill: var(--saffron); }
@@ -86,12 +105,14 @@
   .bead.meru { fill: #b33; }
   .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
   .om { font-size: 32px; color: var(--saffron); opacity: .8; line-height: 1; }
+  .ring-box.small .om { font-size: 22px; }
   .count { font-size: clamp(56px, 20vw, 92px); font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .ring-box.small .count { font-size: clamp(40px, 13vw, 60px); }
   .of { color: var(--muted); font-size: 16px; }
   .count.bump { animation: bump .3s ease; }
   @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.12); color: var(--gold); } 100% { transform: scale(1); } }
   .stats { display: flex; gap: 10px; width: 100%; }
-  .stat { flex: 1; background: var(--panel); border-radius: 12px; padding: 10px; text-align: center; }
+  .stat { flex: 1; background: color-mix(in srgb, var(--panel) 92%, transparent); border-radius: 12px; padding: 10px; text-align: center; }
   .stat b { display: block; font-size: 22px; color: var(--gold); font-variant-numeric: tabular-nums; }
   .stat span { font-size: 12px; color: var(--muted); }
   .status { min-height: 22px; font-size: 14px; color: var(--muted); text-align: center; }
@@ -101,11 +122,11 @@
   .meter i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, var(--saffron), var(--gold)); }
   .meter u { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); opacity: .6; }
   .tapbtn {
-    width: 100%; min-height: 150px; border-radius: 20px; font-size: 26px; font-weight: 700;
-    background: linear-gradient(180deg, var(--saffron), #e07a12); color: #1a0f08;
-    box-shadow: 0 6px 0 #9a520c; touch-action: manipulation; user-select: none;
+    width: 100%; min-height: 140px; border-radius: 20px; font-size: 26px; font-weight: 700;
+    background: linear-gradient(180deg, var(--saffron), color-mix(in srgb, var(--saffron) 80%, #000)); color: var(--on-accent);
+    box-shadow: 0 6px 0 color-mix(in srgb, var(--saffron) 55%, #000); touch-action: manipulation; user-select: none;
   }
-  .tapbtn:active { transform: translateY(4px); box-shadow: 0 2px 0 #9a520c; }
+  .tapbtn:active { transform: translateY(4px); box-shadow: 0 2px 0 color-mix(in srgb, var(--saffron) 55%, #000); }
   .tapbtn small { display: block; font-size: 14px; font-weight: 500; opacity: .8; margin-top: 4px; }
   details { width: 100%; }
   summary { cursor: pointer; color: var(--muted); font-size: 14px; padding: 6px 0; }
@@ -114,7 +135,7 @@
   .toast {
     position: fixed; left: 50%; top: max(20px, env(safe-area-inset-top)); transform: translateX(-50%);
     background: var(--gold); color: #1a0f08; font-weight: 700; padding: 14px 20px; border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.4); z-index: 20; text-align: center; max-width: calc(100% - 32px);
+    box-shadow: 0 10px 30px rgba(0,0,0,.4); z-index: 60; text-align: center; max-width: calc(100% - 32px);
     transition: opacity .3s;
   }
   .toast.off { opacity: 0; pointer-events: none; }
@@ -136,35 +157,72 @@
   .fold-body > div { overflow: hidden; }
   .saved { max-height: 300px; overflow-y: auto; padding: 2px; }
 
+  /* ---------- bottom sheets (photo, settings) ---------- */
+  .sheet { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.55); display: flex; align-items: flex-end; justify-content: center; animation: fade .2s ease; }
+  .sheet-card {
+    width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; background: var(--panel);
+    border-radius: 20px 20px 0 0; padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 12px; animation: up .25s ease;
+  }
+  @keyframes fade { from { opacity: 0; } }
+  @keyframes up { from { transform: translateY(40px); opacity: .5; } }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; }
+  .sheet-head b { font-size: 18px; color: var(--gold); }
+  .crop-wrap { width: 100%; border-radius: 12px; overflow: hidden; background: #000; }
+  .crop-wrap canvas { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+  .progress { width: 100%; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+  .progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--saffron), var(--gold)); transition: width .2s; }
+  .field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+  .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+  .swatch {
+    width: 54px; height: 54px; border-radius: 14px; padding: 0; border: 2px solid transparent; position: relative;
+    display: flex; align-items: flex-end; justify-content: center; font-size: 10px; color: #fff; text-shadow: 0 1px 2px #000; overflow: hidden;
+  }
+  .swatch span { padding-bottom: 3px; }
+  .swatch.sel { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
+  .colors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .colors label { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .colors input[type=color] { width: 100%; height: 42px; border: 1px solid var(--bead); border-radius: 10px; background: var(--bg); padding: 3px; cursor: pointer; }
+  .fab {
+    position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 40;
+    width: 56px; height: 56px; border-radius: 50%; padding: 0; font-size: 26px; line-height: 56px;
+    background: var(--saffron); color: var(--on-accent); box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  }
+  .fab span { display: inline-block; transition: transform .4s ease; }
+
   /* ---------- interaction feedback ---------- */
   button, .saved-item, .ring-box { transition: transform .18s ease, box-shadow .2s ease, filter .2s ease, background-color .2s ease, border-color .2s ease, color .2s ease, opacity .2s ease; }
   :where(button:not(:disabled)):active { transform: scale(.96); }
   button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   @media (hover: hover) {
-    :where(button:not(:disabled)):hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.35); background-color: #4a2e18; }
+    :where(button:not(:disabled)):hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.35); background-color: color-mix(in srgb, var(--panel2) 85%, var(--saffron)); }
     :where(button:not(:disabled)):active { transform: scale(.96); box-shadow: none; }
-    button.primary:not(:disabled):hover { background-color: #ffad55; box-shadow: 0 8px 24px rgba(255,153,51,.35); }
+    button.primary:not(:disabled):hover { background-color: color-mix(in srgb, var(--saffron) 85%, #fff); box-shadow: 0 8px 24px color-mix(in srgb, var(--saffron) 40%, transparent); }
     button.primary.on:not(:disabled):hover { background-color: #ff8475; box-shadow: 0 8px 24px rgba(255,107,91,.35); }
-    button.ghost:not(:disabled):hover { background-color: rgba(255,153,51,.1); color: var(--ink); box-shadow: none; }
-    .chip:hover { background-color: #5a3a1e; }
-    .chip.sel:hover { background-color: #ffad55; }
-    .mode:hover { border-color: rgba(255,153,51,.5); background-color: #45291a; }
+    button.ghost:not(:disabled):hover { background-color: color-mix(in srgb, var(--saffron) 12%, transparent); color: var(--ink); box-shadow: none; }
+    .chip:hover { background-color: color-mix(in srgb, var(--panel2) 70%, var(--saffron)); }
+    .chip.sel:hover { background-color: color-mix(in srgb, var(--saffron) 85%, #fff); }
+    .mode:hover { border-color: color-mix(in srgb, var(--saffron) 50%, transparent); background-color: color-mix(in srgb, var(--panel2) 88%, var(--saffron)); }
     .mode:hover .ic { transform: scale(1.15) rotate(-6deg); }
-    .mode.sel:hover { border-color: var(--saffron); background-color: #553218; }
-    .saved-item:hover { border-color: rgba(255,153,51,.6); background-color: #24150b; transform: translateX(3px); }
+    .mode.sel:hover { border-color: var(--saffron); background-color: color-mix(in srgb, var(--panel2) 70%, var(--saffron)); }
+    .saved-item:hover { border-color: color-mix(in srgb, var(--saffron) 60%, transparent); background-color: color-mix(in srgb, var(--bg) 90%, var(--saffron)); transform: translateX(3px); }
     .saved-item button:hover, .fold-head:hover { transform: none; box-shadow: none; background-color: transparent; }
     .saved-item .txt:hover { color: var(--gold); }
     .saved-item .del:hover { color: var(--warn); transform: scale(1.2); }
     .fold-head:hover { color: var(--ink); }
     .fold-head:hover .chev { color: var(--saffron); }
-    .ring-box:hover { transform: scale(1.02); filter: drop-shadow(0 0 18px rgba(255,153,51,.25)); }
-    .tapbtn:not(:disabled):hover { background-color: transparent; transform: translateY(-2px); box-shadow: 0 8px 0 #9a520c, 0 12px 30px rgba(255,153,51,.35); }
-    .tapbtn:not(:disabled):active { transform: translateY(4px); box-shadow: 0 2px 0 #9a520c; }
+    .ring-box:hover { transform: scale(1.02); filter: drop-shadow(0 0 18px color-mix(in srgb, var(--saffron) 25%, transparent)); }
+    .tapbtn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 0 color-mix(in srgb, var(--saffron) 55%, #000), 0 12px 30px color-mix(in srgb, var(--saffron) 35%, transparent); }
+    .tapbtn:not(:disabled):active { transform: translateY(4px); box-shadow: 0 2px 0 color-mix(in srgb, var(--saffron) 55%, #000); }
+    .reader .w:hover:not(.cur) { background: color-mix(in srgb, var(--hl) 22%, transparent); }
+    .fab:hover { background-color: var(--saffron); transform: scale(1.08); box-shadow: 0 10px 28px color-mix(in srgb, var(--saffron) 45%, transparent); }
+    .fab:hover span { transform: rotate(90deg); }
+    .swatch:hover { transform: scale(1.06); }
   }
   .mode .ic { transition: transform .25s ease; }
   .ring-box:active { transform: scale(.98); }
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
   }
 </style>
 </head>
@@ -172,53 +230,79 @@
 
 <!-- ================= SETUP ================= -->
 <div class="wrap" id="setup">
-  <h1>ॐ Mantra Jaap</h1>
+  <h1 data-i18n="appTitle">ॐ Mantra Jaap</h1>
 
   <div class="card fold" id="savedFold">
     <button class="fold-head" id="foldHead" aria-expanded="true" aria-controls="savedBody">
-      <span>My mantras</span><span class="cnt" id="savedCount">0</span><span class="chev">▾</span>
+      <span data-i18n="myMantras">My mantras &amp; prayers</span><span class="cnt" id="savedCount">0</span><span class="chev">▾</span>
     </button>
     <div class="fold-body" id="savedBody"><div><div class="saved" id="savedList"></div></div></div>
   </div>
 
   <div class="card">
-    <h3>Mantra</h3>
-    <textarea id="mantraInput" placeholder="Type or paste your mantra"></textarea>
-    <h3>Number of jaap</h3>
+    <h3 data-i18n="mantraLabel">Mantra / prayer</h3>
+    <input type="text" id="titleInput" maxlength="80" data-i18n-ph="titlePh">
+    <textarea id="mantraInput" data-i18n-ph="mantraPh"></textarea>
+    <h3 data-i18n="countLabel">Number of jaap</h3>
     <div class="chips" id="targetChips"></div>
     <div class="row">
-      <input type="number" id="targetInput" min="1" max="100000" inputmode="numeric" placeholder="Custom count">
-      <button id="saveMantra">＋ Save to my mantras</button>
+      <input type="number" id="targetInput" min="1" max="100000" inputmode="numeric" data-i18n-ph="customCount">
+      <button id="saveMantra" data-i18n="save">＋ Save</button>
     </div>
   </div>
 
   <div class="card">
-    <h3>How will you chant?</h3>
+    <h3 data-i18n="fromPhoto">Add prayer from a photo</h3>
+    <div class="row">
+      <button id="camBtn" data-i18n="camera">📷 Camera</button>
+      <button id="uploadBtn" data-i18n="upload">🖼 Upload image</button>
+    </div>
+    <input type="file" id="camInput" accept="image/*" capture="environment" hidden>
+    <input type="file" id="imgInput" accept="image/*" hidden>
+  </div>
+
+  <div class="card">
+    <h3 data-i18n="howChant">How will you chant?</h3>
     <div class="modes">
       <button class="mode" data-mode="auto">
-        <div class="ic">🎙</div><b>Auto counting</b>
-        <span>Chant aloud — the mic counts each mantra</span>
+        <div class="ic">🎙</div><b data-i18n="autoTitle">Auto counting</b>
+        <span data-i18n="autoDesc">Chant aloud — the mic counts each mantra</span>
       </button>
       <button class="mode" data-mode="tap">
-        <div class="ic">👆</div><b>Tap counting</b>
-        <span>Chant in your mind — tap once per mantra</span>
+        <div class="ic">👆</div><b data-i18n="tapTitle">Tap counting</b>
+        <span data-i18n="tapDesc">Chant in your mind — tap once per mantra</span>
       </button>
     </div>
   </div>
 
-  <button class="primary" id="begin" disabled>Select a counting option</button>
-  <button class="ghost" id="shareSetup">🔗 Share link to this mantra</button>
+  <button class="primary" id="begin" disabled></button>
+  <button class="ghost" id="shareSetup" data-i18n="shareLink">🔗 Share link to this mantra</button>
 </div>
 
 <!-- ================= COUNTER ================= -->
 <div class="wrap hidden" id="counter">
   <div class="topbar">
-    <button class="ghost" id="back">← Change</button>
+    <button class="ghost" id="back" data-i18n="change">← Change</button>
     <span class="badge" id="modeBadge"></span>
-    <button class="ghost" id="shareCounter">🔗 Share</button>
+    <button class="ghost" id="shareCounter" data-i18n="share">🔗 Share</button>
   </div>
 
-  <div class="mantra" id="mantraText"></div>
+  <div class="ptitle hidden" id="pTitle"></div>
+  <div class="reader" id="reader"></div>
+
+  <div class="guide">
+    <div class="chips" id="guideChips">
+      <button class="chip" data-guide="voice" data-i18n="guideVoice">🎙 Follow voice</button>
+      <button class="chip" data-guide="pace" data-i18n="guidePace">⏱ Steady pace</button>
+      <button class="chip" data-guide="off" data-i18n="guideOff">Highlight off</button>
+    </div>
+    <label class="slider hidden" id="paceBox">
+      <span id="paceLabel"></span>
+      <input type="range" id="wpm" min="15" max="180" step="5">
+    </label>
+    <button id="guideBtn" class="hidden"></button>
+    <div class="heard" id="heard"></div>
+  </div>
 
   <div class="ring-box" id="ring">
     <svg viewBox="0 0 200 200" id="beads"></svg>
@@ -230,83 +314,436 @@
   </div>
 
   <div class="stats">
-    <div class="stat"><b id="rounds">0</b><span>Rounds done</span></div>
-    <div class="stat"><b id="today">0</b><span>Jaap today</span></div>
-    <div class="stat"><b id="total">0</b><span>All-time</span></div>
+    <div class="stat"><b id="rounds">0</b><span data-i18n="rounds">Rounds done</span></div>
+    <div class="stat"><b id="today">0</b><span data-i18n="today">Jaap today</span></div>
+    <div class="stat"><b id="total">0</b><span data-i18n="allTime">All-time</span></div>
   </div>
 
   <!-- auto mode -->
   <div class="wrap" id="autoBox" style="gap:10px">
-    <div class="meter"><i id="meter"></i><u id="thresh"></u></div>
+    <div class="meter" id="meterBox"><i id="meter"></i><u id="thresh"></u></div>
     <div class="status" id="status"></div>
-    <button class="primary" id="start">▶ Start listening</button>
-    <details>
-      <summary>Adjust auto counting</summary>
-      <label class="slider">
-        <span>Pause between mantras: <b id="gapVal"></b> s (raise if it counts too early)</span>
-        <input type="range" id="gap" min="0.3" max="2.5" step="0.1">
-      </label>
-      <label class="slider">
-        <span>Mic sensitivity: <b id="sensVal"></b> (raise if it misses mantras)</span>
-        <input type="range" id="sens" min="1" max="10" step="1">
-      </label>
-      <label class="slider">
-        <span>Shortest mantra length: <b id="minVal"></b> s</span>
-        <input type="range" id="minLen" min="0.4" max="6" step="0.2">
-      </label>
+    <button class="primary" id="start"></button>
+    <details id="adjustBox">
+      <summary data-i18n="adjust">Adjust auto counting</summary>
+      <label class="slider"><span id="gapLabel"></span><input type="range" id="gap" min="0.3" max="2.5" step="0.1"></label>
+      <label class="slider"><span id="sensLabel"></span><input type="range" id="sens" min="1" max="10" step="1"></label>
+      <label class="slider"><span id="minLabel"></span><input type="range" id="minLen" min="0.4" max="6" step="0.2"></label>
     </details>
   </div>
 
   <!-- tap mode -->
-  <button class="tapbtn hidden" id="tapBtn">TAP<small>once after each mantra</small></button>
+  <button class="tapbtn hidden" id="tapBtn"><span data-i18n="tap">TAP</span><small data-i18n="tapSub">once after each mantra</small></button>
 
   <div class="row">
     <button id="minus">− 1</button>
-    <button id="reset">↺ Reset count</button>
+    <button id="reset" data-i18n="resetCount">↺ Reset count</button>
   </div>
   <p class="hint" id="hint"></p>
 </div>
 
+<!-- ================= PHOTO → TEXT ================= -->
+<div class="sheet hidden" id="ocrSheet">
+  <div class="sheet-card">
+    <div class="sheet-head"><b data-i18n="ocrTitle">Prayer from photo</b><button class="ghost" id="ocrClose" aria-label="Close">✕</button></div>
+    <div id="ocrPick">
+      <p class="hint" data-i18n="ocrSelect" style="margin-bottom:10px"></p>
+      <div class="crop-wrap"><canvas id="ocrCanvas"></canvas></div>
+      <div class="row" style="margin-top:10px">
+        <button id="ocrRotate" data-i18n="rotate">⟳ Rotate</button>
+        <button id="ocrAll" data-i18n="wholeImage">Whole image</button>
+      </div>
+    </div>
+    <button class="primary" id="ocrRun" data-i18n="extract">✨ Extract text</button>
+    <div class="progress hidden" id="ocrProg"><i id="ocrBar"></i></div>
+    <div class="status" id="ocrStatus"></div>
+    <div id="ocrResult" class="hidden" style="display:flex;flex-direction:column;gap:10px">
+      <input type="text" id="ocrTitle" maxlength="80" data-i18n-ph="titlePh">
+      <textarea id="ocrText" rows="9" data-i18n-ph="ocrTextPh"></textarea>
+      <label class="field"><span data-i18n="countLabel">Number of jaap</span>
+        <input type="number" id="ocrCount" min="1" max="100000" inputmode="numeric"></label>
+      <div class="row">
+        <button id="ocrUse" data-i18n="useNow">Use without saving</button>
+        <button class="primary" id="ocrSave" data-i18n="saveAsPrayer" style="font-size:16px">💾 Save as prayer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SETTINGS ================= -->
+<div class="sheet hidden" id="setSheet">
+  <div class="sheet-card">
+    <div class="sheet-head"><b data-i18n="settings">Settings</b><button class="ghost" id="setClose" aria-label="Close">✕</button></div>
+    <label class="field"><span data-i18n="appLang">App language</span>
+      <select id="uiLang">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="mr">मराठी</option>
+      </select></label>
+    <label class="field"><span data-i18n="voiceLang">Prayer language (voice &amp; photo)</span>
+      <select id="voiceLang"></select></label>
+    <div class="field"><span data-i18n="theme">Theme</span><div class="swatches" id="themeSw"></div></div>
+    <div class="field"><span data-i18n="colors">Colours</span>
+      <div class="colors">
+        <label><span data-i18n="bgColor">Screen</span><input type="color" id="cBg"></label>
+        <label><span data-i18n="textColor">Text</span><input type="color" id="cInk"></label>
+        <label><span data-i18n="hlColor">Highlight</span><input type="color" id="cHl"></label>
+      </div>
+    </div>
+    <div class="field"><span data-i18n="wallpaper">Wallpaper</span><div class="swatches" id="wpSw"></div>
+      <input type="file" id="wpInput" accept="image/*" hidden></div>
+    <label class="slider" id="dimBox"><span id="dimLabel"></span><input type="range" id="dim" min="0" max="0.9" step="0.05"></label>
+    <label class="slider"><span id="tsLabel"></span><input type="range" id="ts" min="16" max="44" step="1"></label>
+    <button id="setReset" data-i18n="resetSettings">↺ Reset settings</button>
+  </div>
+</div>
+
+<button class="fab" id="fab" aria-label="Settings"><span>⚙</span></button>
 <div class="toast off" id="toast"></div>
 
 <script>
 (() => {
   const STORE = 'mantra-jaap-v2';
+  const SET_STORE = 'mantra-jaap-settings';
+  const WP_STORE = 'mantra-jaap-wallpaper';
   const DEFAULT_MANTRA = 'ॐ श्री देवकृष्णाय उर्ध्वान्तकाय नमः ।';
-  const PRESETS = [11, 21, 27, 54, 108, 1008];
+  const PRESETS = [1, 11, 21, 27, 54, 108, 1008];
+  const TESS = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/';
+  const TESS_CORE = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1';
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const $ = (id) => document.getElementById(id);
 
-  // ---------- persisted state ----------
+  // ================= TRANSLATIONS =================
+  const I18N = {
+    en: {
+      appTitle: 'ॐ Mantra Jaap', myMantras: 'My mantras & prayers', emptySaved: 'Nothing saved yet. Type a mantra below and tap “Save”.',
+      mantraLabel: 'Mantra / prayer', titlePh: 'Title (optional), e.g. Hanuman Chalisa', mantraPh: 'Type or paste your mantra or prayer',
+      countLabel: 'Number of jaap', customCount: 'Custom count', save: '＋ Save', fromPhoto: 'Add prayer from a photo',
+      camera: '📷 Camera', upload: '🖼 Upload image', howChant: 'How will you chant?',
+      autoTitle: 'Auto counting', autoDesc: 'Chant aloud — the mic counts each mantra',
+      tapTitle: 'Tap counting', tapDesc: 'Chant in your mind — tap once per mantra',
+      selectMode: 'Select a counting option', enterMantra: 'Enter a mantra', begin: '🙏 Begin jaap',
+      shareLink: '🔗 Share link to this mantra', removeConfirm: 'Remove this from your list?', saved: 'Saved 🙏',
+      linkCopied: 'Link copied — paste it to share', copyLink: 'Copy this link:',
+      change: '← Change', share: '🔗 Share', badgeAuto: '🎙 Auto counting', badgeTap: '👆 Tap counting',
+      rounds: 'Rounds done', today: 'Jaap today', allTime: 'All-time',
+      guideVoice: '🎙 Follow voice', guidePace: '⏱ Steady pace', guideOff: 'Highlight off',
+      pace: 'Highlight speed: {n} words / min', startGuide: '▶ Start highlight', stopGuide: '■ Stop highlight',
+      startListening: '▶ Start listening', stopListening: '■ Stop listening',
+      pressStart: 'Press Start and begin chanting.', calibrating: 'Calibrating… stay silent for a moment',
+      listening: 'Listening… chant at your own pace 🙏', listeningWords: 'Listening — words light up as you read 🙏',
+      paused: 'Paused. Press Start to continue.',
+      noMic: 'Microphone not available here. Open the https link in Chrome or Safari, or use Tap counting.',
+      micDenied: 'Could not access the microphone. Allow mic access and try again, or use Tap counting.',
+      noSR: 'Follow voice is not supported in this browser — try Chrome.', srNetwork: 'Follow voice needs internet. Try Steady pace.',
+      adjust: 'Adjust auto counting', gap: 'Pause between mantras: {n} s (raise if it counts too early)',
+      sens: 'Mic sensitivity: {n} (raise if it misses mantras)', minLen: 'Shortest mantra length: {n} s',
+      tap: 'TAP', tapSub: 'once after each mantra', resetCount: '↺ Reset count', resetConfirm: 'Reset the count and rounds for this mantra to 0?',
+      hintAuto: 'Chant aloud with a short breath between mantras — each mantra + pause counts as one. Tap any word to move the highlight.',
+      hintAutoVoice: 'Read aloud — words light up as you say them, and each time you reach the end it counts one. Tap any word to move the highlight.',
+      hintTap: 'Chant in your mind and tap the button after each recitation. Tap any word to move the highlight.',
+      roundDone: '{n} पूर्ण 🙏 Round {r} complete — keep going',
+      ocrTitle: 'Prayer from photo', ocrSelect: 'Drag on the photo to select the text you want, or use the whole image.',
+      rotate: '⟳ Rotate', wholeImage: '⬚ Whole image', extract: '✨ Extract text',
+      ocrLoading: 'Loading text reader… (first time can take a minute)', ocrReading: 'Reading text… {p}%',
+      ocrDone: 'Check the text below and fix any mistakes, then save.', ocrFail: 'Could not read the text. Check your internet and try again.',
+      ocrEmpty: 'No text found. Try a clearer photo or select the text area more closely.', ocrTextPh: 'Extracted text appears here — you can edit it',
+      ocrBadImage: 'Could not open this image. Please try another photo.',
+      saveAsPrayer: '💾 Save as prayer', useNow: 'Use without saving',
+      settings: 'Settings', appLang: 'App language', voiceLang: 'Prayer language (voice & photo)', theme: 'Theme', colors: 'Colours',
+      bgColor: 'Screen', textColor: 'Text', hlColor: 'Highlight', wallpaper: 'Wallpaper', dim: 'Wallpaper dimming: {n}%',
+      textSize: 'Prayer text size: {n}px', resetSettings: '↺ Reset settings', resetSetConfirm: 'Reset all settings to default?',
+      wpNone: 'None', wpUpload: 'Upload', wpTooBig: 'Could not save this wallpaper. Try a smaller image.',
+      thSaffron: 'Saffron', thTemple: 'Temple', thMidnight: 'Midnight', thLotus: 'Lotus', thForest: 'Forest',
+      wpSunrise: 'Sunrise', wpOm: 'Om', wpLotus: 'Lotus', wpStars: 'Stars',
+    },
+    hi: {
+      appTitle: 'ॐ मंत्र जाप', myMantras: 'मेरे मंत्र और प्रार्थनाएँ', emptySaved: 'अभी कुछ सहेजा नहीं गया। नीचे मंत्र लिखें और “सहेजें” दबाएँ।',
+      mantraLabel: 'मंत्र / प्रार्थना', titlePh: 'शीर्षक (वैकल्पिक), जैसे हनुमान चालीसा', mantraPh: 'अपना मंत्र या प्रार्थना लिखें या पेस्ट करें',
+      countLabel: 'जाप की संख्या', customCount: 'अपनी संख्या', save: '＋ सहेजें', fromPhoto: 'फ़ोटो से प्रार्थना जोड़ें',
+      camera: '📷 कैमरा', upload: '🖼 फ़ोटो अपलोड', howChant: 'आप जाप कैसे करेंगे?',
+      autoTitle: 'ऑटो गिनती', autoDesc: 'ज़ोर से जाप करें — माइक हर मंत्र गिनेगा',
+      tapTitle: 'टैप गिनती', tapDesc: 'मन में जाप करें — हर मंत्र पर एक बार टैप करें',
+      selectMode: 'गिनती का तरीका चुनें', enterMantra: 'मंत्र लिखें', begin: '🙏 जाप शुरू करें',
+      shareLink: '🔗 इस मंत्र का लिंक शेयर करें', removeConfirm: 'इसे सूची से हटाएँ?', saved: 'सहेजा गया 🙏',
+      linkCopied: 'लिंक कॉपी हो गया — शेयर करने के लिए पेस्ट करें', copyLink: 'यह लिंक कॉपी करें:',
+      change: '← बदलें', share: '🔗 शेयर', badgeAuto: '🎙 ऑटो गिनती', badgeTap: '👆 टैप गिनती',
+      rounds: 'पूरे राउंड', today: 'आज के जाप', allTime: 'कुल जाप',
+      guideVoice: '🎙 आवाज़ के साथ', guidePace: '⏱ तय गति', guideOff: 'हाइलाइट बंद',
+      pace: 'हाइलाइट गति: {n} शब्द / मिनट', startGuide: '▶ हाइलाइट शुरू', stopGuide: '■ हाइलाइट रोकें',
+      startListening: '▶ सुनना शुरू करें', stopListening: '■ सुनना रोकें',
+      pressStart: 'शुरू दबाएँ और जाप आरंभ करें।', calibrating: 'तैयारी… एक पल शांत रहें',
+      listening: 'सुन रहा है… अपनी गति से जाप करें 🙏', listeningWords: 'सुन रहा है — पढ़ते ही शब्द चमकेंगे 🙏',
+      paused: 'रुका हुआ। जारी रखने के लिए शुरू दबाएँ।',
+      noMic: 'यहाँ माइक उपलब्ध नहीं है। Chrome या Safari में https लिंक खोलें, या टैप गिनती चुनें।',
+      micDenied: 'माइक नहीं मिल सका। माइक की अनुमति दें और फिर कोशिश करें, या टैप गिनती चुनें।',
+      noSR: 'इस ब्राउज़र में “आवाज़ के साथ” नहीं चलता — Chrome आज़माएँ।', srNetwork: '“आवाज़ के साथ” के लिए इंटरनेट चाहिए। “तय गति” आज़माएँ।',
+      adjust: 'ऑटो गिनती समायोजित करें', gap: 'मंत्रों के बीच विराम: {n} से. (जल्दी गिने तो बढ़ाएँ)',
+      sens: 'माइक संवेदनशीलता: {n} (मंत्र छूटें तो बढ़ाएँ)', minLen: 'सबसे छोटे मंत्र की अवधि: {n} से.',
+      tap: 'टैप', tapSub: 'हर मंत्र के बाद एक बार', resetCount: '↺ गिनती रीसेट', resetConfirm: 'इस मंत्र की गिनती और राउंड 0 करें?',
+      hintAuto: 'ज़ोर से जाप करें और मंत्रों के बीच छोटा विराम लें — हर मंत्र + विराम एक गिना जाएगा। हाइलाइट वहाँ ले जाने के लिए किसी भी शब्द पर टैप करें।',
+      hintAutoVoice: 'ज़ोर से पढ़ें — बोलते ही शब्द चमकेंगे, और अंत तक पहुँचने पर एक जाप गिना जाएगा। हाइलाइट वहाँ ले जाने के लिए किसी शब्द पर टैप करें।',
+      hintTap: 'मन में जाप करें और हर पाठ के बाद बटन दबाएँ। हाइलाइट वहाँ ले जाने के लिए किसी भी शब्द पर टैप करें।',
+      roundDone: '{n} पूर्ण 🙏 राउंड {r} पूरा — जारी रखें',
+      ocrTitle: 'फ़ोटो से प्रार्थना', ocrSelect: 'जो लिखा हुआ चाहिए उस हिस्से पर उँगली से खींचकर चुनें, या पूरी फ़ोटो लें।',
+      rotate: '⟳ घुमाएँ', wholeImage: '⬚ पूरी फ़ोटो', extract: '✨ टेक्स्ट निकालें',
+      ocrLoading: 'टेक्स्ट रीडर लोड हो रहा है… (पहली बार एक मिनट लग सकता है)', ocrReading: 'टेक्स्ट पढ़ रहा है… {p}%',
+      ocrDone: 'नीचे टेक्स्ट जाँचें, गलतियाँ ठीक करें, फिर सहेजें।', ocrFail: 'टेक्स्ट नहीं पढ़ सका। इंटरनेट जाँचें और फिर कोशिश करें।',
+      ocrEmpty: 'कोई टेक्स्ट नहीं मिला। साफ़ फ़ोटो लें या टेक्स्ट वाला हिस्सा ठीक से चुनें।', ocrTextPh: 'निकाला गया टेक्स्ट यहाँ आएगा — आप इसे बदल सकते हैं',
+      ocrBadImage: 'यह फ़ोटो नहीं खुली। कृपया दूसरी फ़ोटो आज़माएँ।',
+      saveAsPrayer: '💾 प्रार्थना सहेजें', useNow: 'बिना सहेजे उपयोग करें',
+      settings: 'सेटिंग्स', appLang: 'ऐप की भाषा', voiceLang: 'प्रार्थना की भाषा (आवाज़ और फ़ोटो)', theme: 'थीम', colors: 'रंग',
+      bgColor: 'स्क्रीन', textColor: 'टेक्स्ट', hlColor: 'हाइलाइट', wallpaper: 'वॉलपेपर', dim: 'वॉलपेपर धुंधलापन: {n}%',
+      textSize: 'प्रार्थना टेक्स्ट का आकार: {n}px', resetSettings: '↺ सेटिंग्स रीसेट', resetSetConfirm: 'सभी सेटिंग्स डिफ़ॉल्ट करें?',
+      wpNone: 'कोई नहीं', wpUpload: 'अपलोड', wpTooBig: 'यह वॉलपेपर सहेजा नहीं जा सका। छोटी फ़ोटो आज़माएँ।',
+      thSaffron: 'केसरिया', thTemple: 'मंदिर', thMidnight: 'रात्रि', thLotus: 'कमल', thForest: 'वन',
+      wpSunrise: 'सूर्योदय', wpOm: 'ॐ', wpLotus: 'कमल', wpStars: 'तारे',
+    },
+    mr: {
+      appTitle: 'ॐ मंत्र जप', myMantras: 'माझे मंत्र आणि प्रार्थना', emptySaved: 'अजून काही जतन केलेले नाही. खाली मंत्र लिहा आणि “जतन करा” दाबा.',
+      mantraLabel: 'मंत्र / प्रार्थना', titlePh: 'शीर्षक (ऐच्छिक), उदा. हनुमान चालीसा', mantraPh: 'तुमचा मंत्र किंवा प्रार्थना लिहा किंवा पेस्ट करा',
+      countLabel: 'जपाची संख्या', customCount: 'तुमची संख्या', save: '＋ जतन करा', fromPhoto: 'फोटोतून प्रार्थना जोडा',
+      camera: '📷 कॅमेरा', upload: '🖼 फोटो अपलोड', howChant: 'तुम्ही जप कसा कराल?',
+      autoTitle: 'ऑटो मोजणी', autoDesc: 'मोठ्याने जप करा — माइक प्रत्येक मंत्र मोजेल',
+      tapTitle: 'टॅप मोजणी', tapDesc: 'मनात जप करा — प्रत्येक मंत्रानंतर एकदा टॅप करा',
+      selectMode: 'मोजणीचा प्रकार निवडा', enterMantra: 'मंत्र लिहा', begin: '🙏 जप सुरू करा',
+      shareLink: '🔗 या मंत्राची लिंक शेअर करा', removeConfirm: 'हे यादीतून काढायचे?', saved: 'जतन केले 🙏',
+      linkCopied: 'लिंक कॉपी झाली — शेअर करण्यासाठी पेस्ट करा', copyLink: 'ही लिंक कॉपी करा:',
+      change: '← बदला', share: '🔗 शेअर', badgeAuto: '🎙 ऑटो मोजणी', badgeTap: '👆 टॅप मोजणी',
+      rounds: 'पूर्ण फेरे', today: 'आजचे जप', allTime: 'एकूण जप',
+      guideVoice: '🎙 आवाजासोबत', guidePace: '⏱ ठराविक गती', guideOff: 'हायलाइट बंद',
+      pace: 'हायलाइट गती: {n} शब्द / मिनिट', startGuide: '▶ हायलाइट सुरू', stopGuide: '■ हायलाइट थांबवा',
+      startListening: '▶ ऐकणे सुरू करा', stopListening: '■ ऐकणे थांबवा',
+      pressStart: 'सुरू दाबा आणि जप सुरू करा.', calibrating: 'तयारी… क्षणभर शांत राहा',
+      listening: 'ऐकत आहे… तुमच्या गतीने जप करा 🙏', listeningWords: 'ऐकत आहे — वाचताच शब्द उजळतील 🙏',
+      paused: 'थांबवले. पुढे सुरू ठेवण्यासाठी सुरू दाबा.',
+      noMic: 'येथे माइक उपलब्ध नाही. Chrome किंवा Safari मध्ये https लिंक उघडा, किंवा टॅप मोजणी वापरा.',
+      micDenied: 'माइक मिळाला नाही. माइकची परवानगी द्या आणि पुन्हा प्रयत्न करा, किंवा टॅप मोजणी वापरा.',
+      noSR: 'या ब्राउझरमध्ये “आवाजासोबत” चालत नाही — Chrome वापरून पाहा.', srNetwork: '“आवाजासोबत” साठी इंटरनेट हवे. “ठराविक गती” वापरून पाहा.',
+      adjust: 'ऑटो मोजणी समायोजित करा', gap: 'मंत्रांमधील विराम: {n} से. (लवकर मोजत असेल तर वाढवा)',
+      sens: 'माइक संवेदनशीलता: {n} (मंत्र सुटत असतील तर वाढवा)', minLen: 'सर्वात लहान मंत्राचा कालावधी: {n} से.',
+      tap: 'टॅप', tapSub: 'प्रत्येक मंत्रानंतर एकदा', resetCount: '↺ मोजणी रीसेट', resetConfirm: 'या मंत्राची मोजणी आणि फेरे 0 करायचे?',
+      hintAuto: 'मोठ्याने जप करा आणि मंत्रांमध्ये थोडा विराम घ्या — प्रत्येक मंत्र + विराम एक मोजला जाईल. हायलाइट हलवण्यासाठी कोणत्याही शब्दावर टॅप करा.',
+      hintAutoVoice: 'मोठ्याने वाचा — बोलताच शब्द उजळतील, आणि शेवटी पोहोचल्यावर एक जप मोजला जाईल. हायलाइट हलवण्यासाठी शब्दावर टॅप करा.',
+      hintTap: 'मनात जप करा आणि प्रत्येक पाठानंतर बटण दाबा. हायलाइट हलवण्यासाठी कोणत्याही शब्दावर टॅप करा.',
+      roundDone: '{n} पूर्ण 🙏 फेरा {r} पूर्ण — पुढे चालू ठेवा',
+      ocrTitle: 'फोटोतून प्रार्थना', ocrSelect: 'हवा असलेला मजकूर बोटाने ओढून निवडा, किंवा संपूर्ण फोटो वापरा.',
+      rotate: '⟳ फिरवा', wholeImage: '⬚ संपूर्ण फोटो', extract: '✨ मजकूर काढा',
+      ocrLoading: 'मजकूर वाचक लोड होत आहे… (पहिल्यांदा एक मिनिट लागू शकतो)', ocrReading: 'मजकूर वाचत आहे… {p}%',
+      ocrDone: 'खालील मजकूर तपासा, चुका दुरुस्त करा, मग जतन करा.', ocrFail: 'मजकूर वाचता आला नाही. इंटरनेट तपासा आणि पुन्हा प्रयत्न करा.',
+      ocrEmpty: 'मजकूर सापडला नाही. स्पष्ट फोटो घ्या किंवा मजकूराचा भाग नीट निवडा.', ocrTextPh: 'काढलेला मजकूर येथे दिसेल — तुम्ही तो बदलू शकता',
+      ocrBadImage: 'हा फोटो उघडला नाही. कृपया दुसरा फोटो वापरा.',
+      saveAsPrayer: '💾 प्रार्थना जतन करा', useNow: 'जतन न करता वापरा',
+      settings: 'सेटिंग्ज', appLang: 'ॲपची भाषा', voiceLang: 'प्रार्थनेची भाषा (आवाज आणि फोटो)', theme: 'थीम', colors: 'रंग',
+      bgColor: 'स्क्रीन', textColor: 'मजकूर', hlColor: 'हायलाइट', wallpaper: 'वॉलपेपर', dim: 'वॉलपेपर मंदपणा: {n}%',
+      textSize: 'प्रार्थनेच्या मजकुराचा आकार: {n}px', resetSettings: '↺ सेटिंग्ज रीसेट', resetSetConfirm: 'सर्व सेटिंग्ज डिफॉल्ट करायच्या?',
+      wpNone: 'काही नाही', wpUpload: 'अपलोड', wpTooBig: 'हा वॉलपेपर जतन झाला नाही. लहान फोटो वापरून पाहा.',
+      thSaffron: 'भगवा', thTemple: 'मंदिर', thMidnight: 'रात्र', thLotus: 'कमळ', thForest: 'वन',
+      wpSunrise: 'सूर्योदय', wpOm: 'ॐ', wpLotus: 'कमळ', wpStars: 'तारे',
+    },
+  };
+
+  // Prayer languages: speech-recognition locale + Tesseract OCR language
+  const LANGS = {
+    hi: { name: 'हिन्दी', sr: 'hi-IN', ocr: 'hin', deva: true },
+    sa: { name: 'संस्कृत', sr: 'hi-IN', ocr: 'san+hin', deva: true },
+    mr: { name: 'मराठी', sr: 'mr-IN', ocr: 'mar', deva: true },
+    ne: { name: 'नेपाली', sr: 'ne-NP', ocr: 'nep', deva: true },
+    en: { name: 'English', sr: 'en-IN', ocr: 'eng' },
+    gu: { name: 'ગુજરાતી', sr: 'gu-IN', ocr: 'guj' },
+    pa: { name: 'ਪੰਜਾਬੀ', sr: 'pa-IN', ocr: 'pan' },
+    bn: { name: 'বাংলা', sr: 'bn-IN', ocr: 'ben' },
+    or: { name: 'ଓଡ଼ିଆ', sr: 'or-IN', ocr: 'ori' },
+    ta: { name: 'தமிழ்', sr: 'ta-IN', ocr: 'tam' },
+    te: { name: 'తెలుగు', sr: 'te-IN', ocr: 'tel' },
+    kn: { name: 'ಕನ್ನಡ', sr: 'kn-IN', ocr: 'kan' },
+    ml: { name: 'മലയാളം', sr: 'ml-IN', ocr: 'mal' },
+  };
+
+  const THEMES = {
+    saffron:  { key: 'thSaffron',  bg: '#1a0f08', panel: '#2a1a0e', panel2: '#3a2414', ink: '#fbeedd', muted: '#c9a982', saffron: '#ff9933', gold: '#f4c430', bead: '#5a3a1e', light: false },
+    temple:   { key: 'thTemple',   bg: '#fff6e6', panel: '#ffffff', panel2: '#f6e3c4', ink: '#3b2410', muted: '#8a6a48', saffron: '#e0700a', gold: '#b4500a', bead: '#e3cfae', light: true },
+    midnight: { key: 'thMidnight', bg: '#0b1020', panel: '#151c33', panel2: '#222b4a', ink: '#e8ecff', muted: '#9aa6cf', saffron: '#7aa2ff', gold: '#ffd36e', bead: '#2c3760', light: false },
+    lotus:    { key: 'thLotus',    bg: '#1e0f1a', panel: '#2d1626', panel2: '#40203a', ink: '#ffe8f4', muted: '#d6a3c4', saffron: '#ff7eb6', gold: '#ffc6e0', bead: '#5a2c4f', light: false },
+    forest:   { key: 'thForest',   bg: '#0d1a12', panel: '#15281c', panel2: '#1f3a29', ink: '#e6f5e9', muted: '#9cc3a6', saffron: '#6fcf8f', gold: '#e8d36b', bead: '#2b4a36', light: false },
+  };
+  const omTile = 'url("data:image/svg+xml,' + encodeURIComponent(
+    "<svg xmlns='http://www.w3.org/2000/svg' width='110' height='110'><text x='55' y='70' font-size='44' text-anchor='middle' fill='#ff9933' fill-opacity='0.10' font-family='serif'>ॐ</text></svg>") + '")';
+  const WALLPAPERS = {
+    none: { key: 'wpNone', css: null },
+    sunrise: { key: 'wpSunrise', css: 'linear-gradient(165deg, #5a1a06 0%, #b8480c 38%, #f2a23a 60%, #2a1208 100%)' },
+    om: { key: 'wpOm', css: omTile, tile: true },
+    lotus: { key: 'wpLotus', css: 'radial-gradient(circle at 20% 15%, #ff7eb6 0%, transparent 40%), radial-gradient(circle at 85% 80%, #8a4dff 0%, transparent 45%), linear-gradient(160deg, #3a0f2c, #14081f)' },
+    stars: { key: 'wpStars', css: 'radial-gradient(1.5px 1.5px at 20% 30%, #fff 50%, transparent), radial-gradient(1px 1px at 70% 20%, #fff 50%, transparent), radial-gradient(1.2px 1.2px at 40% 70%, #fff 50%, transparent), radial-gradient(1px 1px at 85% 60%, #fff 50%, transparent), radial-gradient(1.5px 1.5px at 60% 90%, #fff 50%, transparent), radial-gradient(ellipse at 50% 0%, #1c2a5a, #05070f 70%)' },
+  };
+
+  // ================= PERSISTED STATE =================
   const todayKey = () => new Date().toISOString().slice(0, 10);
   let state = {
     saved: [{ text: DEFAULT_MANTRA, target: 108 }],
-    mantra: DEFAULT_MANTRA, target: 108, mode: null,
-    count: 0, rounds: 0,
-    day: todayKey(), todayCount: 0, total: 0,
-    gap: 0.7, sens: 5, minLen: 1.2,
+    mantra: DEFAULT_MANTRA, title: '', target: 108, mode: null,
+    count: 0, rounds: 0, day: todayKey(), todayCount: 0, total: 0,
+    gap: 0.7, sens: 5, minLen: 1.2, savedOpen: true, guide: null, wpm: 60,
   };
+  const DEFAULT_SETTINGS = { uiLang: 'en', voiceLang: 'hi', theme: 'saffron', bg: '', ink: '', hl: '', wallpaper: 'none', dim: 0.45, ts: 22 };
+  let settings = { ...DEFAULT_SETTINGS };
+  let wpData = null;
   try {
     const old = JSON.parse(localStorage.getItem('mantra-jaap-v1') || 'null');
-    if (old) { state.total = old.total || 0; }
+    if (old) state.total = old.total || 0;
     Object.assign(state, JSON.parse(localStorage.getItem(STORE) || '{}'));
+    Object.assign(settings, JSON.parse(localStorage.getItem(SET_STORE) || '{}'));
+    wpData = localStorage.getItem(WP_STORE);
   } catch (e) {}
+  if (!settings.uiLang || !I18N[settings.uiLang]) settings.uiLang = (navigator.language || '').startsWith('mr') ? 'mr' : (navigator.language || '').startsWith('hi') ? 'hi' : 'en';
+  if (!LANGS[settings.voiceLang]) settings.voiceLang = 'hi';
   if (state.day !== todayKey()) { state.day = todayKey(); state.todayCount = 0; }
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
+  const saveSettings = () => { try { localStorage.setItem(SET_STORE, JSON.stringify(settings)); } catch (e) {} };
 
-  // A shared link (?m=mantra&n=count) opens that mantra
+  function clampTarget(v, dflt = 108) {
+    const n = Math.round(Number(v));
+    return Number.isFinite(n) && n >= 1 ? Math.min(n, 100000) : dflt;
+  }
+
+  // A shared link (?m=mantra&n=count&t=title) opens that mantra
   const params = new URLSearchParams(location.search);
   if (params.get('m')) {
-    const m = params.get('m').trim().slice(0, 500);
+    const m = params.get('m').trim().slice(0, 20000);
     const n = clampTarget(params.get('n'));
+    const ti = (params.get('t') || '').trim().slice(0, 80);
     if (m && (m !== state.mantra || n !== state.target)) {
-      state.mantra = m; state.target = n; state.count = 0; state.rounds = 0;
+      state.mantra = m; state.target = n; state.title = ti; state.count = 0; state.rounds = 0;
     }
   }
 
-  function clampTarget(v) {
-    const n = Math.round(Number(v));
-    return Number.isFinite(n) && n >= 1 ? Math.min(n, 100000) : 108;
+  // ================= i18n helpers =================
+  function t(k, vars) {
+    let s = (I18N[settings.uiLang] && I18N[settings.uiLang][k]) || I18N.en[k] || k;
+    if (vars) for (const v in vars) s = s.replace('{' + v + '}', vars[v]);
+    return s;
   }
+  function applyI18n() {
+    document.documentElement.lang = settings.uiLang;
+    document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-ph]').forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
+    $('fab').setAttribute('aria-label', t('settings'));
+    updateBegin(); renderSaved(); renderSliderLabels(); renderSettings();
+    if (!$('counter').classList.contains('hidden')) refreshCounterLabels();
+  }
+
+  // ================= THEME / SETTINGS =================
+  function luminance(hex) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 0;
+    const n = parseInt(m[1], 16), c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function applyTheme() {
+    const th = THEMES[settings.theme] || THEMES.saffron;
+    const r = document.documentElement.style;
+    const bg = settings.bg || th.bg;
+    r.setProperty('--bg', bg);
+    r.setProperty('--panel', th.panel); r.setProperty('--panel2', th.panel2);
+    r.setProperty('--ink', settings.ink || th.ink); r.setProperty('--muted', th.muted);
+    r.setProperty('--saffron', th.saffron); r.setProperty('--gold', th.gold); r.setProperty('--bead', th.bead);
+    r.setProperty('--read-ink', settings.ink || th.ink);
+    const hl = settings.hl || th.gold;
+    r.setProperty('--hl', hl);
+    r.setProperty('--hl-ink', luminance(hl) > 0.35 ? '#1a0f08' : '#ffffff');
+    r.setProperty('--on-accent', luminance(th.saffron) > 0.3 ? '#1a0f08' : '#ffffff');
+    r.setProperty('--ts', settings.ts + 'px');
+    document.querySelector('meta[name=theme-color]').setAttribute('content', bg);
+
+    // wallpaper (with dimming overlay so text stays readable)
+    const body = document.body.style;
+    const wp = settings.wallpaper === 'custom' && wpData ? { css: 'url("' + wpData + '")' } : WALLPAPERS[settings.wallpaper];
+    if (!wp || !wp.css) {
+      body.backgroundImage = ''; body.backgroundSize = ''; body.backgroundRepeat = '';
+    } else {
+      const d = th.light ? `rgba(255,248,236,${settings.dim})` : `rgba(0,0,0,${settings.dim})`;
+      body.backgroundImage = `linear-gradient(${d}, ${d}), ${wp.css}`;
+      body.backgroundSize = wp.tile ? 'auto, 110px 110px' : 'cover';
+      body.backgroundRepeat = wp.tile ? 'repeat' : 'no-repeat';
+    }
+    $('dimBox').classList.toggle('hidden', !wp || !wp.css);
+  }
+
+  function renderSettings() {
+    $('uiLang').value = settings.uiLang;
+    const vl = $('voiceLang');
+    if (!vl.options.length) for (const k in LANGS) vl.add(new Option(LANGS[k].name, k));
+    vl.value = settings.voiceLang;
+    const th = THEMES[settings.theme] || THEMES.saffron;
+    $('cBg').value = settings.bg || th.bg;
+    $('cInk').value = settings.ink || th.ink;
+    $('cHl').value = settings.hl || th.gold;
+    $('dim').value = settings.dim; $('ts').value = settings.ts;
+    $('dimLabel').textContent = t('dim', { n: Math.round(settings.dim * 100) });
+    $('tsLabel').textContent = t('textSize', { n: settings.ts });
+
+    const ts = $('themeSw'); ts.innerHTML = '';
+    for (const k in THEMES) {
+      const b = document.createElement('button'); const x = THEMES[k];
+      b.className = 'swatch' + (settings.theme === k ? ' sel' : '');
+      b.style.background = `linear-gradient(135deg, ${x.bg} 0 55%, ${x.saffron} 55% 78%, ${x.gold} 78%)`;
+      const s = document.createElement('span'); s.textContent = t(x.key); b.appendChild(s);
+      b.onclick = () => { settings.theme = k; settings.bg = ''; settings.ink = ''; settings.hl = ''; saveSettings(); applyTheme(); renderSettings(); };
+      ts.appendChild(b);
+    }
+    const ws = $('wpSw'); ws.innerHTML = '';
+    const wpKeys = [...Object.keys(WALLPAPERS), 'custom'];
+    wpKeys.forEach((k) => {
+      const b = document.createElement('button');
+      b.className = 'swatch' + (settings.wallpaper === k ? ' sel' : '');
+      const s = document.createElement('span');
+      if (k === 'custom') {
+        b.style.background = wpData ? `center/cover url("${wpData}")` : 'var(--panel2)';
+        s.textContent = '⬆ ' + t('wpUpload');
+        b.onclick = () => $('wpInput').click();
+      } else {
+        const w = WALLPAPERS[k];
+        b.style.background = w.css ? w.css : (THEMES[settings.theme] || THEMES.saffron).bg;
+        if (w.tile) { b.style.backgroundColor = '#2a1a0e'; b.style.backgroundSize = '40px 40px'; }
+        s.textContent = t(w.key);
+        b.onclick = () => { settings.wallpaper = k; saveSettings(); applyTheme(); renderSettings(); };
+      }
+      b.appendChild(s); ws.appendChild(b);
+    });
+  }
+
+  $('fab').onclick = () => { renderSettings(); $('setSheet').classList.remove('hidden'); };
+  $('setClose').onclick = () => $('setSheet').classList.add('hidden');
+  $('setSheet').addEventListener('click', (e) => { if (e.target === $('setSheet')) $('setSheet').classList.add('hidden'); });
+  $('uiLang').onchange = (e) => { settings.uiLang = e.target.value; saveSettings(); applyI18n(); };
+  $('voiceLang').onchange = (e) => {
+    settings.voiceLang = e.target.value; saveSettings();
+    if (srWanted) { stopSR(); startSR(); } // restart recognition in the new language
+  };
+  [['cBg', 'bg'], ['cInk', 'ink'], ['cHl', 'hl']].forEach(([id, k]) => {
+    $(id).addEventListener('input', (e) => { settings[k] = e.target.value; saveSettings(); applyTheme(); });
+  });
+  $('dim').addEventListener('input', (e) => { settings.dim = +e.target.value; $('dimLabel').textContent = t('dim', { n: Math.round(settings.dim * 100) }); saveSettings(); applyTheme(); });
+  $('ts').addEventListener('input', (e) => { settings.ts = +e.target.value; $('tsLabel').textContent = t('textSize', { n: settings.ts }); saveSettings(); applyTheme(); });
+  $('setReset').onclick = () => {
+    if (!confirm(t('resetSetConfirm'))) return;
+    const lang = settings.uiLang;
+    settings = { ...DEFAULT_SETTINGS, uiLang: lang };
+    saveSettings(); applyTheme(); applyI18n();
+  };
+  $('wpInput').onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    try {
+      const bmp = await createImageBitmap(f);
+      const scale = Math.min(1, 1280 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+      c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+      const data = c.toDataURL('image/jpeg', 0.8);
+      try { localStorage.setItem(WP_STORE, data); } catch (err) { toast(t('wpTooBig')); }
+      wpData = data; settings.wallpaper = 'custom'; saveSettings(); applyTheme(); renderSettings();
+    } catch (err) { toast(t('ocrBadImage')); }
+  };
 
   // ================= SETUP SCREEN =================
   function setFold(open) {
@@ -317,25 +754,28 @@
   $('foldHead').onclick = () => setFold($('savedFold').classList.contains('closed'));
   setFold(state.savedOpen !== false);
 
+  const isLong = (text) => /\n/.test(text) || text.split(/\s+/).length > 12;
+
   function renderSaved() {
     const list = $('savedList');
     list.innerHTML = '';
     $('savedCount').textContent = state.saved.length;
     if (!state.saved.length) {
       const p = document.createElement('div');
-      p.className = 'empty'; p.textContent = 'No saved mantras yet. Type one below and tap “Save”.';
+      p.className = 'empty'; p.textContent = t('emptySaved');
       list.appendChild(p);
       return;
     }
     state.saved.forEach((s, i) => {
       const item = document.createElement('div');
       item.className = 'saved-item' + (s.text === $('mantraInput').value.trim() && s.target === currentTarget() ? ' sel' : '');
-      const t = document.createElement('button'); t.className = 'txt'; t.textContent = s.text;
+      const tx = document.createElement('button'); tx.className = 'txt';
+      tx.textContent = (isLong(s.text) ? '📜 ' : '') + (s.title || s.text.replace(/\s+/g, ' '));
       const n = document.createElement('span'); n.className = 'n'; n.textContent = '× ' + s.target;
       const d = document.createElement('button'); d.className = 'del'; d.textContent = '✕'; d.title = 'Remove';
-      t.onclick = () => { $('mantraInput').value = s.text; setTarget(s.target); renderSaved(); };
-      d.onclick = () => { if (confirm('Remove this mantra from your list?')) { state.saved.splice(i, 1); save(); renderSaved(); } };
-      item.append(t, n, d);
+      tx.onclick = () => { $('mantraInput').value = s.text; $('titleInput').value = s.title || ''; setTarget(s.target); renderSaved(); updateBegin(); };
+      d.onclick = () => { if (confirm(t('removeConfirm'))) { state.saved.splice(i, 1); save(); renderSaved(); } };
+      item.append(tx, n, d);
       list.appendChild(item);
     });
   }
@@ -354,13 +794,16 @@
   $('targetInput').addEventListener('input', () => { setTarget(currentTarget()); renderSaved(); });
   $('mantraInput').addEventListener('input', () => { renderSaved(); updateBegin(); });
 
+  function addSaved(text, target, title) {
+    const existing = state.saved.find((s) => s.text === text);
+    if (existing) { existing.target = target; existing.title = title; } else state.saved.unshift({ text, target, title });
+    save(); renderSaved(); setFold(true);
+  }
   $('saveMantra').onclick = () => {
     const text = $('mantraInput').value.trim();
     if (!text) { $('mantraInput').focus(); return; }
-    const target = currentTarget();
-    const existing = state.saved.find((s) => s.text === text);
-    if (existing) existing.target = target; else state.saved.unshift({ text, target });
-    save(); renderSaved(); setFold(true); toast('Saved to my mantras 🙏');
+    addSaved(text, currentTarget(), $('titleInput').value.trim());
+    toast(t('saved'));
   };
 
   function selectMode(m) {
@@ -373,25 +816,24 @@
   function updateBegin() {
     const ok = state.mode && $('mantraInput').value.trim();
     $('begin').disabled = !ok;
-    $('begin').textContent = !state.mode ? 'Select a counting option'
-      : !$('mantraInput').value.trim() ? 'Enter a mantra'
-      : '🙏 Begin jaap';
+    $('begin').textContent = !state.mode ? t('selectMode') : !$('mantraInput').value.trim() ? t('enterMantra') : t('begin');
   }
 
   $('begin').onclick = () => {
     const text = $('mantraInput').value.trim();
     const target = currentTarget();
     if (text !== state.mantra || target !== state.target) { state.count = 0; state.rounds = 0; }
-    state.mantra = text; state.target = target;
+    state.mantra = text; state.target = target; state.title = $('titleInput').value.trim();
     save();
     showCounter();
   };
 
   function showSetup() {
-    stopListening();
+    stopAll();
     $('counter').classList.add('hidden');
     $('setup').classList.remove('hidden');
     $('mantraInput').value = state.mantra;
+    $('titleInput').value = state.title || '';
     setTarget(state.target);
     // Ask for the counting option each time before starting
     state.mode = null;
@@ -401,22 +843,205 @@
   }
 
   // ---------- share ----------
-  function shareUrl(text, target) {
+  function shareUrl(text, target, title) {
     const base = location.origin + location.pathname.replace(/index\.html$/, '');
-    return base + '?m=' + encodeURIComponent(text) + '&n=' + target;
+    return base + '?m=' + encodeURIComponent(text) + '&n=' + target + (title ? '&t=' + encodeURIComponent(title) : '');
   }
-  async function share(text, target) {
+  async function share(text, target, title) {
     if (!text) return;
-    const url = shareUrl(text, target);
-    const data = { title: 'Mantra Jaap', text: `${text} — ${target} jaap`, url };
+    const url = shareUrl(text, target, title);
+    const data = { title: title || 'Mantra Jaap', text: `${title || text.slice(0, 120)} — ${target} jaap`, url };
     try {
       if (navigator.share) { await navigator.share(data); return; }
     } catch (e) { if (e && e.name === 'AbortError') return; }
-    try { await navigator.clipboard.writeText(url); toast('Link copied — paste it to share'); }
-    catch (e) { prompt('Copy this link:', url); }
+    try { await navigator.clipboard.writeText(url); toast(t('linkCopied')); }
+    catch (e) { prompt(t('copyLink'), url); }
   }
-  $('shareSetup').onclick = () => share($('mantraInput').value.trim(), currentTarget());
-  $('shareCounter').onclick = () => share(state.mantra, state.target);
+  $('shareSetup').onclick = () => share($('mantraInput').value.trim(), currentTarget(), $('titleInput').value.trim());
+  $('shareCounter').onclick = () => share(state.mantra, state.target, state.title);
+
+  // ================= READER (live word highlighting) =================
+  let words = [];        // [{ el, sk }]
+  let pos = 0;           // index of the word to read next
+  let lastPos = -1;
+
+  // A loose "skeleton" of a word for fuzzy matching: no punctuation, digits or vowel signs.
+  // Speech recognisers spell Sanskrit/Hindi words inconsistently, so matching on consonants is far more forgiving.
+  function skel(w) {
+    return w.replace(/ॐ/g, 'ओम').normalize('NFD').toLowerCase().replace(/[\p{P}\p{S}\p{N}\p{M}\s]/gu, '');
+  }
+  function lev(a, b) {
+    if (a === b) return 0;
+    const m = a.length, n = b.length;
+    if (!m) return n; if (!n) return m;
+    let prev = Array.from({ length: n + 1 }, (_, j) => j);
+    for (let i = 1; i <= m; i++) {
+      const cur = [i];
+      for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[n];
+  }
+  const sim = (a, b) => (a && b ? 1 - lev(a, b) / Math.max(a.length, b.length) : 0);
+
+  function buildReader() {
+    const box = $('reader');
+    box.innerHTML = '';
+    words = [];
+    state.mantra.split(/\r?\n/).forEach((line, li) => {
+      if (li) box.appendChild(document.createElement('br'));
+      line.split(/\s+/).filter(Boolean).forEach((w) => {
+        const s = document.createElement('span');
+        s.className = 'w'; s.textContent = w;
+        const idx = words.length;
+        s.onclick = (e) => { e.stopPropagation(); jumpTo(idx); };
+        box.append(s, ' ');
+        words.push({ el: s, sk: skel(w) });
+      });
+    });
+    lastPos = -1;
+    setPos(0);
+  }
+  // skip over pure punctuation like । ॥ ॥१॥
+  function nextReal(p) { while (p < words.length && !words[p].sk) p++; return p; }
+  function setPos(p) {
+    pos = nextReal(Math.max(0, Math.min(p, words.length)));
+    const from = Math.max(0, Math.min(pos, lastPos < 0 ? 0 : lastPos) - 1);
+    const to = lastPos < 0 ? words.length : Math.min(words.length, Math.max(pos, lastPos) + 2);
+    for (let i = from; i < to; i++) words[i].el.className = 'w' + (i < pos ? ' read' : '') + (i === pos ? ' cur' : '');
+    lastPos = pos;
+    const cur = words[pos];
+    if (cur) {
+      const box = $('reader');
+      const top = cur.el.offsetTop - box.clientHeight / 2 + cur.el.offsetHeight / 2;
+      if (Math.abs(box.scrollTop - top) > 8) box.scrollTop = top;
+    }
+  }
+  function jumpTo(idx) {
+    setPos(idx);
+    if (paceOn) schedulePace();
+  }
+  function resetGuide() {
+    setPos(0);
+    $('reader').scrollTop = 0;
+    if (paceOn) schedulePace();
+  }
+  // Reached the end of the text by following the voice
+  let endTimer;
+  function textEnded() {
+    clearTimeout(endTimer);
+    if (state.mode === 'auto' && state.guide === 'voice') add();
+    // in tap mode the highlight waits at the end until the next TAP
+  }
+  function advance(p, source) {
+    setPos(p);
+    if (pos >= words.length && source === 'voice') textEnded();
+  }
+
+  // ----- follow voice (speech recognition) -----
+  let rec = null, srWanted = false, consumed = [], misses = 0, endWatch;
+  function hear(heardWord) {
+    const h = skel(heardWord);
+    if (!h || pos >= words.length) return;
+    let best = -1, bs = 0;
+    const end = Math.min(words.length, pos + 8);
+    for (let j = pos; j < end; j++) {
+      const w = words[j].sk; if (!w) continue;
+      let s = sim(h, w);
+      // the recogniser sometimes joins two written words into one
+      const j2 = nextReal(j + 1);
+      if (j2 < words.length) {
+        const s2 = sim(h, w + words[j2].sk);
+        if (s2 > s && s2 >= 0.6) { s = s2; if (s - (j - pos) * 0.03 > bs) { bs = s - (j - pos) * 0.03; best = j2; } continue; }
+      }
+      s -= (j - pos) * 0.03; // prefer the nearest match
+      if (s > bs) { bs = s; best = j; }
+    }
+    if (best >= 0 && bs >= 0.5) { misses = 0; advance(best + 1, 'voice'); return; }
+    // lost our place? look further ahead with a stricter match
+    if (++misses >= 3) {
+      for (let j = pos; j < Math.min(words.length, pos + 40); j++) {
+        if (words[j].sk && words[j].sk.length >= 3 && sim(h, words[j].sk) >= 0.8) { misses = 0; advance(j + 1, 'voice'); return; }
+      }
+    }
+  }
+  function startSR() {
+    if (!SR) { setStatus(t('noSR'), 'err'); return false; }
+    rec = new SR();
+    rec.lang = LANGS[settings.voiceLang].sr;
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.maxAlternatives = 1;
+    rec.onstart = () => { consumed = []; };
+    rec.onresult = (ev) => {
+      let shown = '';
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const r = ev.results[i];
+        const ws = r[0].transcript.trim().split(/\s+/).filter(Boolean);
+        for (let k = consumed[i] || 0; k < ws.length; k++) hear(ws[k]);
+        consumed[i] = Math.max(consumed[i] || 0, ws.length);
+        shown = r[0].transcript;
+      }
+      if (shown) $('heard').textContent = '“' + shown.trim().split(/\s+/).slice(-8).join(' ') + '”';
+      // only the last word left and the reader went quiet → count it as finished
+      clearTimeout(endWatch);
+      if (words.length && nextReal(pos + 1) >= words.length && pos < words.length) {
+        endWatch = setTimeout(() => { if (nextReal(pos + 1) >= words.length && pos < words.length) advance(words.length, 'voice'); }, 1600);
+      }
+    };
+    rec.onerror = (e) => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { stopAll(); setStatus(t('micDenied'), 'err'); }
+      else if (e.error === 'network') setStatus(t('srNetwork'), 'err');
+    };
+    rec.onend = () => { if (srWanted) { try { rec.start(); } catch (e) {} } };
+    srWanted = true;
+    try { rec.start(); } catch (e) {}
+    return true;
+  }
+  function stopSR() {
+    srWanted = false; clearTimeout(endWatch);
+    if (rec) { try { rec.abort(); } catch (e) {} rec = null; }
+    $('heard').textContent = '';
+  }
+
+  // ----- steady pace -----
+  let paceOn = false, paceTimer;
+  function schedulePace() {
+    clearTimeout(paceTimer);
+    if (!paceOn || pos >= words.length) return; // waits at the end for the next count
+    const w = words[pos].el.textContent;
+    const len = Math.min(2.2, Math.max(0.6, [...w].length / 5));
+    paceTimer = setTimeout(() => { advance(pos + 1, 'pace'); schedulePace(); }, (60000 / state.wpm) * len);
+  }
+  function startPace() { paceOn = true; schedulePace(); }
+  function stopPace() { paceOn = false; clearTimeout(paceTimer); }
+
+  // ----- guide controls -----
+  function setGuide(g) {
+    if (g === 'voice' && !SR) { toast(t('noSR')); g = 'pace'; }
+    const wasRunning = running || guideRunning;
+    stopAll();
+    state.guide = g; save();
+    document.querySelectorAll('#guideChips .chip').forEach((c) => c.classList.toggle('sel', c.dataset.guide === g));
+    $('paceBox').classList.toggle('hidden', g !== 'pace');
+    $('reader').classList.toggle('off', g === 'off');
+    $('guideBtn').classList.toggle('hidden', state.mode !== 'tap' || g === 'off');
+    // in auto mode, follow-voice does the counting, so the rhythm meter is not used
+    $('meterBox').classList.toggle('hidden', g === 'voice');
+    $('adjustBox').classList.toggle('hidden', g === 'voice');
+    refreshCounterLabels();
+    if (wasRunning) setStatus(t('paused'), '');
+  }
+  document.querySelectorAll('#guideChips .chip').forEach((c) => { c.onclick = () => setGuide(c.dataset.guide); });
+  $('wpm').addEventListener('input', (e) => { state.wpm = +e.target.value; $('paceLabel').textContent = t('pace', { n: state.wpm }); save(); });
+
+  let guideRunning = false;
+  $('guideBtn').onclick = () => {
+    if (guideRunning) { stopAll(); return; }
+    if (state.guide === 'voice') { if (!startSR()) return; setStatus(t('listeningWords'), 'live'); }
+    else if (state.guide === 'pace') startPace();
+    guideRunning = true; keepAwake(true); refreshCounterLabels();
+  };
 
   // ================= COUNTER SCREEN =================
   const svg = $('beads');
@@ -455,18 +1080,32 @@
     if (bump) { const el = $('count'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
   }
 
+  function refreshCounterLabels() {
+    const auto = state.mode === 'auto';
+    $('modeBadge').textContent = auto ? t('badgeAuto') : t('badgeTap');
+    $('hint').textContent = !auto ? t('hintTap') : state.guide === 'voice' ? t('hintAutoVoice') : t('hintAuto');
+    $('start').textContent = running ? t('stopListening') : t('startListening');
+    $('guideBtn').textContent = guideRunning ? t('stopGuide') : t('startGuide');
+    $('paceLabel').textContent = t('pace', { n: state.wpm });
+    if (!running && !guideRunning && !$('status').classList.contains('err')) setStatus(t('pressStart'), '');
+  }
+
   function showCounter() {
     $('setup').classList.add('hidden');
     $('counter').classList.remove('hidden');
-    $('mantraText').textContent = state.mantra;
+    $('pTitle').textContent = state.title || '';
+    $('pTitle').classList.toggle('hidden', !state.title);
     const auto = state.mode === 'auto';
-    $('modeBadge').textContent = auto ? '🎙 Auto counting' : '👆 Tap counting';
     $('autoBox').classList.toggle('hidden', !auto);
     $('tapBtn').classList.toggle('hidden', auto);
-    $('hint').textContent = auto
-      ? 'Chant aloud and take a short breath between mantras — each mantra + pause counts as one. You can also tap the mala to add one.'
-      : 'Chant in your mind and tap the button (or the mala, or press Space) after each mantra. Keep tapping as long as you like — rounds keep adding up.';
-    setStatus('Press Start and begin chanting.', '');
+    $('ring').classList.toggle('small', isLong(state.mantra));
+    $('wpm').value = state.wpm;
+    buildReader();
+    let g = state.guide;
+    if (!g) g = isLong(state.mantra) ? (SR ? 'voice' : 'pace') : 'off';
+    if (g === 'voice' && !SR) g = 'pace';
+    $('status').className = 'status';
+    setGuide(g);
     buildBeads();
     render();
     window.scrollTo(0, 0);
@@ -489,22 +1128,26 @@
 
   let toastTimer;
   function toast(msg) {
-    const t = $('toast');
-    t.textContent = msg; t.classList.remove('off');
+    const el = $('toast');
+    el.textContent = msg; el.classList.remove('off');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.add('off'), 3000);
+    toastTimer = setTimeout(() => el.classList.add('off'), 3000);
   }
 
   // ---------- counting ----------
+  let resetTimer;
   function add() {
     state.count++; state.total++; state.todayCount++;
+    // next recitation starts from the first word
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(resetGuide, state.guide === 'voice' ? 450 : 0);
     if (state.count >= state.target) {
       state.rounds++;
       state.count = 0;
       save(); render(true);
       tone(528, 1.6, 0.25); setTimeout(() => tone(792, 1.8, 0.2), 250);
       vibrate([200, 100, 200, 100, 400]);
-      toast(`${state.target} पूर्ण 🙏 Round ${state.rounds} complete — keep going`);
+      toast(t('roundDone', { n: state.target, r: state.rounds }));
       // show the full ring briefly before it starts again
       beads.forEach((b) => b.setAttribute('class', 'bead done'));
       $('count').textContent = state.target;
@@ -542,7 +1185,7 @@
     const buf = new Float32Array(analyser.fftSize);
     calibrating = performance.now(); calSamples = [];
     voiced = false; voicedMs = 0;
-    setStatus('Calibrating… stay silent for a moment', '');
+    setStatus(t('calibrating'), '');
     lastTick = performance.now();
 
     const loop = () => {
@@ -559,7 +1202,8 @@
           calSamples.sort((a, b) => a - b);
           noiseFloor = Math.max(calSamples[Math.floor(calSamples.length * 0.6)] || 0.005, 0.002);
           calibrating = 0;
-          setStatus('Listening… chant at your own pace 🙏', 'live');
+          setStatus(t('listening'), 'live');
+          if (state.guide === 'pace') startPace();
         }
       } else if (rms > threshold()) {
         if (!voiced) { voiced = true; voiceStart = now; voicedMs = 0; }
@@ -577,14 +1221,16 @@
     };
     loop();
   }
+  function stopVoice() {
+    cancelAnimationFrame(raf);
+    if (stream) stream.getTracks().forEach((tr) => tr.stop());
+    if (audioCtx) audioCtx.close().catch(() => {});
+    stream = null; audioCtx = null;
+    $('meter').style.width = '0%';
+  }
 
   let running = false, wakeLock = null;
-  function setStatus(t, cls) { const s = $('status'); s.textContent = t; s.className = 'status ' + (cls || ''); }
-  function setRunning(on) {
-    running = on;
-    $('start').textContent = on ? '■ Stop listening' : '▶ Start listening';
-    $('start').classList.toggle('on', on);
-  }
+  function setStatus(txt, cls) { const s = $('status'); s.textContent = txt; s.className = 'status ' + (cls || ''); }
   async function keepAwake(on) {
     try {
       if (on && 'wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
@@ -592,52 +1238,230 @@
     } catch (e) {}
   }
   async function startListening() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setStatus('Microphone not available here. Open the https link in Chrome or Safari, or use Tap counting.', 'err');
+    if (state.guide === 'voice') {
+      // speech recognition both highlights the words and counts each finished recitation
+      if (!startSR()) return;
+      running = true; keepAwake(true); refreshCounterLabels();
+      setStatus(t('listeningWords'), 'live');
       return;
     }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { setStatus(t('noMic'), 'err'); return; }
     try {
       await startVoice();
-      setRunning(true);
-      keepAwake(true);
+      running = true; keepAwake(true); refreshCounterLabels();
     } catch (e) {
-      stopListening();
-      setStatus('Could not access the microphone. Allow mic access and try again, or use Tap counting.', 'err');
+      stopAll();
+      setStatus(t('micDenied'), 'err');
     }
   }
-  function stopListening() {
-    cancelAnimationFrame(raf);
-    if (stream) stream.getTracks().forEach((t) => t.stop());
-    if (audioCtx) audioCtx.close().catch(() => {});
-    stream = null; audioCtx = null;
-    $('meter').style.width = '0%';
-    if (running) setStatus('Paused. Press Start to continue.', '');
-    setRunning(false);
+  function stopAll() {
+    const was = running || guideRunning;
+    stopVoice(); stopSR(); stopPace();
+    running = false; guideRunning = false;
     keepAwake(false);
+    if (!$('counter').classList.contains('hidden')) {
+      refreshCounterLabels();
+      if (was) setStatus(t('paused'), '');
+    }
   }
 
   // ---------- controls ----------
-  $('start').onclick = () => { running ? stopListening() : startListening(); };
+  $('start').onclick = () => { running ? stopAll() : startListening(); };
   $('back').onclick = showSetup;
   $('ring').onclick = add;
   $('tapBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); add(); });
   $('minus').onclick = minus;
   $('reset').onclick = () => {
     if (state.count === 0 && state.rounds === 0) return;
-    if (confirm('Reset the count and rounds for this mantra to 0?')) { state.count = 0; state.rounds = 0; save(); render(); }
+    if (confirm(t('resetConfirm'))) { state.count = 0; state.rounds = 0; save(); render(); }
   };
   document.addEventListener('keydown', (e) => {
-    if ($('counter').classList.contains('hidden')) return;
+    if ($('counter').classList.contains('hidden') || !$('setSheet').classList.contains('hidden')) return;
+    if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement && document.activeElement.tagName)) return;
     if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); add(); }
     else if (e.code === 'Backspace') { e.preventDefault(); minus(); }
   });
-  [['gap', 'gapVal'], ['sens', 'sensVal'], ['minLen', 'minVal']].forEach(([k, v]) => {
-    $(k).value = state[k]; $(v).textContent = state[k];
-    $(k).addEventListener('input', (e) => { state[k] = +e.target.value; $(v).textContent = state[k]; save(); });
+  function renderSliderLabels() {
+    $('gapLabel').textContent = t('gap', { n: state.gap });
+    $('sensLabel').textContent = t('sens', { n: state.sens });
+    $('minLabel').textContent = t('minLen', { n: state.minLen });
+  }
+  ['gap', 'sens', 'minLen'].forEach((k) => {
+    $(k).value = state[k];
+    $(k).addEventListener('input', (e) => { state[k] = +e.target.value; renderSliderLabels(); save(); });
   });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && running) keepAwake(true); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && (running || guideRunning)) keepAwake(true); });
 
+  // ================= PHOTO → TEXT (OCR) =================
+  const ocr = { src: null, rot: 0, sel: null, drag: null, view: null, scale: 1 };
+  const oc = $('ocrCanvas');
+
+  $('camBtn').onclick = () => $('camInput').click();
+  $('uploadBtn').onclick = () => $('imgInput').click();
+  ['camInput', 'imgInput'].forEach((id) => {
+    $(id).onchange = async (e) => {
+      const f = e.target.files[0]; e.target.value = '';
+      if (!f) return;
+      try {
+        ocr.bitmap = await createImageBitmap(f);
+      } catch (err) { toast(t('ocrBadImage')); return; }
+      ocr.rot = 0; ocr.sel = null;
+      openOcr();
+    };
+  });
+  function openOcr() {
+    $('ocrSheet').classList.remove('hidden');
+    $('ocrPick').classList.remove('hidden');
+    $('ocrResult').classList.add('hidden');
+    $('ocrProg').classList.add('hidden');
+    $('ocrStatus').textContent = ''; $('ocrStatus').className = 'status';
+    $('ocrRun').classList.remove('hidden'); $('ocrRun').disabled = false;
+    $('ocrTitle').value = ''; $('ocrText').value = '';
+    prepareOcrImage();
+  }
+  // full-resolution rotated source + a smaller preview for selecting
+  function prepareOcrImage() {
+    const b = ocr.bitmap;
+    const maxSide = 3000;
+    const s = Math.min(1, maxSide / Math.max(b.width, b.height));
+    const w = Math.round(b.width * s), h = Math.round(b.height * s);
+    const rotated = ocr.rot % 180 !== 0;
+    const src = document.createElement('canvas');
+    src.width = rotated ? h : w; src.height = rotated ? w : h;
+    const g = src.getContext('2d');
+    g.translate(src.width / 2, src.height / 2);
+    g.rotate((ocr.rot * Math.PI) / 180);
+    g.drawImage(b, -w / 2, -h / 2, w, h);
+    ocr.src = src;
+    const vs = Math.min(1, 1000 / Math.max(src.width, src.height));
+    oc.width = Math.round(src.width * vs); oc.height = Math.round(src.height * vs);
+    ocr.scale = src.width / oc.width;
+    ocr.sel = null;
+    drawOcr();
+  }
+  function drawOcr() {
+    const g = oc.getContext('2d');
+    g.clearRect(0, 0, oc.width, oc.height);
+    g.drawImage(ocr.src, 0, 0, oc.width, oc.height);
+    const s = ocr.sel;
+    if (s && s.w > 4 && s.h > 4) {
+      g.fillStyle = 'rgba(0,0,0,.55)';
+      g.fillRect(0, 0, oc.width, s.y);
+      g.fillRect(0, s.y + s.h, oc.width, oc.height - s.y - s.h);
+      g.fillRect(0, s.y, s.x, s.h);
+      g.fillRect(s.x + s.w, s.y, oc.width - s.x - s.w, s.h);
+      g.strokeStyle = '#f4c430'; g.lineWidth = 3; g.setLineDash([10, 6]);
+      g.strokeRect(s.x, s.y, s.w, s.h);
+      g.setLineDash([]);
+    }
+  }
+  function canvasPoint(e) {
+    const r = oc.getBoundingClientRect();
+    return { x: Math.max(0, Math.min(oc.width, ((e.clientX - r.left) / r.width) * oc.width)), y: Math.max(0, Math.min(oc.height, ((e.clientY - r.top) / r.height) * oc.height)) };
+  }
+  oc.addEventListener('pointerdown', (e) => { oc.setPointerCapture(e.pointerId); ocr.drag = canvasPoint(e); ocr.sel = null; });
+  oc.addEventListener('pointermove', (e) => {
+    if (!ocr.drag) return;
+    const p = canvasPoint(e), d = ocr.drag;
+    ocr.sel = { x: Math.min(d.x, p.x), y: Math.min(d.y, p.y), w: Math.abs(p.x - d.x), h: Math.abs(p.y - d.y) };
+    drawOcr();
+  });
+  oc.addEventListener('pointerup', () => { ocr.drag = null; if (ocr.sel && (ocr.sel.w < 12 || ocr.sel.h < 12)) { ocr.sel = null; drawOcr(); } });
+  $('ocrRotate').onclick = () => { ocr.rot = (ocr.rot + 90) % 360; prepareOcrImage(); };
+  $('ocrAll').onclick = () => { ocr.sel = null; drawOcr(); };
+  $('ocrClose').onclick = () => $('ocrSheet').classList.add('hidden');
+
+  // crop + upscale small text + greyscale/contrast so Tesseract reads it better
+  function ocrInputCanvas() {
+    const s = ocr.sel;
+    const sx = s ? s.x * ocr.scale : 0, sy = s ? s.y * ocr.scale : 0;
+    const sw = s ? s.w * ocr.scale : ocr.src.width, sh = s ? s.h * ocr.scale : ocr.src.height;
+    const up = sw < 1400 ? Math.min(2.5, 1400 / sw) : 1;
+    const c = document.createElement('canvas');
+    c.width = Math.round(sw * up); c.height = Math.round(sh * up);
+    const g = c.getContext('2d');
+    g.imageSmoothingQuality = 'high';
+    g.filter = 'grayscale(1) contrast(1.35)';
+    g.drawImage(ocr.src, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    return c;
+  }
+  function loadScript(src) {
+    return new Promise((res, rej) => {
+      if (window.Tesseract) return res();
+      const s = document.createElement('script');
+      s.src = src; s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+  let ocrWorker = null, ocrWorkerLang = '';
+  async function getWorker(lang, onProgress) {
+    await loadScript(TESS + 'tesseract.min.js');
+    if (ocrWorker && ocrWorkerLang === lang) return ocrWorker;
+    if (ocrWorker) { try { await ocrWorker.terminate(); } catch (e) {} }
+    ocrWorker = await Tesseract.createWorker(lang, 1, {
+      workerPath: TESS + 'worker.min.js',
+      corePath: TESS_CORE,
+      logger: onProgress,
+    });
+    ocrWorkerLang = lang;
+    return ocrWorker;
+  }
+  function cleanOcr(text, deva) {
+    let s = text.replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    if (deva) s = s.replace(/\s*\|\|\s*/g, ' ॥ ').replace(/\s*\|\s*/g, ' । ').replace(/ +\n/g, '\n').replace(/ {2,}/g, ' ');
+    return s;
+  }
+  $('ocrRun').onclick = async () => {
+    const lang = LANGS[settings.voiceLang];
+    $('ocrRun').disabled = true;
+    $('ocrProg').classList.remove('hidden'); $('ocrBar').style.width = '3%';
+    $('ocrStatus').className = 'status'; $('ocrStatus').textContent = t('ocrLoading');
+    try {
+      const worker = await getWorker(lang.ocr, (m) => {
+        if (m.status === 'recognizing text') {
+          $('ocrBar').style.width = Math.round(10 + m.progress * 90) + '%';
+          $('ocrStatus').textContent = t('ocrReading', { p: Math.round(m.progress * 100) });
+        } else if (typeof m.progress === 'number') {
+          $('ocrBar').style.width = Math.round(3 + m.progress * 7) + '%';
+        }
+      });
+      const { data } = await worker.recognize(ocrInputCanvas());
+      const text = cleanOcr(data.text || '', lang.deva);
+      $('ocrBar').style.width = '100%';
+      if (!text) { $('ocrStatus').className = 'status err'; $('ocrStatus').textContent = t('ocrEmpty'); $('ocrRun').disabled = false; return; }
+      $('ocrText').value = text;
+      $('ocrCount').value = isLong(text) ? 1 : 108;
+      $('ocrPick').classList.add('hidden');
+      $('ocrRun').classList.add('hidden');
+      $('ocrResult').classList.remove('hidden');
+      $('ocrStatus').className = 'status live'; $('ocrStatus').textContent = t('ocrDone');
+      setTimeout(() => $('ocrProg').classList.add('hidden'), 400);
+    } catch (err) {
+      console.error(err);
+      $('ocrStatus').className = 'status err'; $('ocrStatus').textContent = t('ocrFail');
+      $('ocrProg').classList.add('hidden');
+      $('ocrRun').disabled = false;
+    }
+  };
+  function useOcrText(saveIt) {
+    const text = $('ocrText').value.trim();
+    if (!text) { $('ocrText').focus(); return; }
+    const target = clampTarget($('ocrCount').value, 1);
+    const title = $('ocrTitle').value.trim();
+    if (saveIt) { addSaved(text, target, title); toast(t('saved')); }
+    $('mantraInput').value = text; $('titleInput').value = title; setTarget(target);
+    renderSaved(); updateBegin();
+    $('ocrSheet').classList.add('hidden');
+  }
+  $('ocrSave').onclick = () => useOcrText(true);
+  $('ocrUse').onclick = () => useOcrText(false);
+
+  // test hook (harmless): lets automated tests drive the word matcher
+  window.__jaap = { hear: (w) => hear(w), pos: () => pos, words: () => words.length };
+
+  applyTheme();
   showSetup();
+  applyI18n();
 })();
 </script>
 </body>
