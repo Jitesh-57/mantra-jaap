@@ -176,6 +176,7 @@ export const STRINGS = {
     settingsSaved: 'Settings saved ✓',
     savedState: 'Saved',
     notSaved: 'Changes not saved — tap Save settings to keep them',
+    privacy: 'Privacy policy',
   },
 
   hi: {
@@ -353,6 +354,7 @@ export const STRINGS = {
     settingsSaved: 'सेटिंग्स सहेज ली गईं ✓',
     savedState: 'सहेजा हुआ',
     notSaved: 'बदलाव सहेजे नहीं गए — रखने के लिए “सेटिंग्स सहेजें” दबाएँ',
+    privacy: 'गोपनीयता नीति',
   },
 
   mr: {
@@ -530,5 +532,6 @@ export const STRINGS = {
     settingsSaved: 'सेटिंग्ज जतन झाल्या ✓',
     savedState: 'जतन केलेले',
     notSaved: 'बदल जतन झाले नाहीत — ठेवण्यासाठी “सेटिंग्ज जतन करा” दाबा',
+    privacy: 'गोपनीयता धोरण',
   },
 };

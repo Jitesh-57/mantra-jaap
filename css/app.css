@@ -412,6 +412,9 @@ body.has-wp .practice.long .reader { background: none; -webkit-backdrop-filter: 
 .brand-sm small { font-size: 12px; }
 @media (hover: hover) { .account-btn:not(.signed):hover { background: color-mix(in srgb, var(--surface-2) 85%, var(--text)); } }
 
+.policy-link { align-self: center; font-size: 14px; color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; padding: 6px; }
+.policy-link:hover { color: var(--text); }
+
 /* ============ toast ============ */
 .toast {
   position: fixed; z-index: 70; left: 50%; top: calc(var(--safe-area-inset-top, env(safe-area-inset-top)) + 14px); transform: translate(-50%, 0);

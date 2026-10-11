@@ -1416,6 +1416,12 @@ async function initAccounts() {
   }
 }
 
+// the privacy policy lives on the website; inside the Android app open it in the browser
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('.policy-link');
+  if (a && NATIVE) { e.preventDefault(); openExternal(WEB_URL + 'privacy'); }
+});
+
 // Android back button: close a panel, leave practice, then exit
 if (NATIVE) {
   onBackButton(() => {
