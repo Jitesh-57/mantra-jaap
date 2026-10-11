@@ -1,8 +1,12 @@
 // Bridges to Android when the app runs inside the Capacitor shell.
 // In a normal browser NATIVE is false and nothing here is used.
 const Cap = window.Capacitor;
-export const NATIVE = !!Cap?.isNativePlatform?.();
-const plugin = (name) => (NATIVE ? Cap.registerPlugin(name) : null);
+export const NATIVE = !!Cap?.isNativePlatform?.() && typeof Cap.registerPlugin === 'function';
+// a plugin that cannot be reached must never stop the app from starting
+const plugin = (name) => {
+  if (!NATIVE) return null;
+  try { return Cap.registerPlugin(name); } catch (e) { console.error('plugin ' + name, e); return null; }
+};
 
 // Links that leave the app (share links, email confirmations) point at the website.
 export const WEB_URL = 'https://mantra-jaap-delta.vercel.app/';
