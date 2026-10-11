@@ -172,6 +172,8 @@ export const STRINGS = {
     welcome: 'Signed in · your data is saved',
     signedOut: 'Signed out',
     syncError: 'Could not reach your account. Changes are kept on this device.',
+    saveSettings: 'Save settings',
+    settingsSaved: 'Settings saved ✓',
   },
 
   hi: {
@@ -345,6 +347,8 @@ export const STRINGS = {
     welcome: 'साइन इन हो गया · आपका डेटा सहेजा जा रहा है',
     signedOut: 'साइन आउट हो गया',
     syncError: 'आपका खाता नहीं मिल सका। बदलाव इस फ़ोन पर सहेजे हैं।',
+    saveSettings: 'सेटिंग्स सहेजें',
+    settingsSaved: 'सेटिंग्स सहेज ली गईं ✓',
   },
 
   mr: {
@@ -518,5 +522,7 @@ export const STRINGS = {
     welcome: 'साइन इन झाले · तुमचा डेटा जतन होत आहे',
     signedOut: 'साइन आउट झाले',
     syncError: 'तुमचे खाते मिळाले नाही. बदल या फोनवर जतन आहेत.',
+    saveSettings: 'सेटिंग्ज जतन करा',
+    settingsSaved: 'सेटिंग्ज जतन झाल्या ✓',
   },
 };

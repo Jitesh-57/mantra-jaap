@@ -1145,6 +1145,16 @@ for (const [id, k] of [['cBg', 'bg'], ['cText', 'text'], ['cHl', 'hl']]) {
 $('colorsReset').onclick = () => { S.bg = ''; S.text = ''; S.hl = ''; saveSettings(); applyTheme(); renderSettings(); };
 $('ts').addEventListener('input', (e) => { S.ts = +e.target.value; $('tsLabel').textContent = t('textSize', { n: S.ts }); saveSettings(); applyTheme(); });
 $('dim').addEventListener('input', (e) => { S.dim = +e.target.value; $('dimLabel').textContent = t('dim', { n: Math.round(S.dim * 100) }); saveSettings(); applyTheme(); });
+$('setSave').onclick = async () => {
+  // guests cannot keep settings: invite them to sign in instead
+  if (AUTH_ON && !user && !read(SIGNED_KEY)) { closeSheet('setSheet'); openAuth(); return; }
+  store(SET_KEY, S);
+  if (S.wallpaper === 'custom' && wpData) store(WP_KEY, wpData);
+  clearTimeout(cloudTimer);
+  await pushCloud();
+  closeSheet('setSheet');
+  toast(t('settingsSaved'));
+};
 $('setReset').onclick = () => {
   if (!confirm(t('resetSetConfirm'))) return;
   Object.assign(S, DEFAULT_SETTINGS, { uiLang: S.uiLang });

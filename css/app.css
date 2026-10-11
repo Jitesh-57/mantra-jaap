@@ -311,6 +311,12 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 .sheet-head { display: flex; align-items: center; gap: 8px; margin: 0 -8px 12px 0; }
 .sheet-head h2 { flex: 1; margin: 0; font-size: 20px; line-height: 1.25; }
 .sheet .stack { gap: 18px; }
+/* action that stays visible at the bottom of a long sheet */
+.sheet-foot {
+  position: sticky; bottom: calc(-24px - env(safe-area-inset-bottom)); z-index: 2;
+  margin: 18px -20px calc(-24px - env(safe-area-inset-bottom)); padding: 12px 20px calc(16px + env(safe-area-inset-bottom));
+  background: var(--surface); border-top: 1px solid var(--line);
+}
 .sheet-preview { margin: -4px 0 0; font-family: var(--font-read); font-size: 19px; line-height: 1.6; color: var(--read); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .sheet-sub { margin: 0 0 8px; font-size: 14px; font-weight: 600; color: var(--text-2); }
 .sheet-actions { display: flex; gap: 8px; justify-content: center; }
