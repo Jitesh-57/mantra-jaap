@@ -21,6 +21,7 @@ Counts, saved prayers and settings stay on each person's own device (localStorag
 - `js/app.js` – screens, counting, voice, scanning, settings
 - `js/align.js` – follow-voice engine: phonetic word keys + alignment of the heard words against the text
 - `js/i18n.js` – English, Hindi and Marathi strings
+- `js/cloud.js`, `js/config.js`, `supabase/schema.sql` – optional accounts (Google / email) via Supabase; see `SETUP-ACCOUNTS.md`
 
 ## Deploy
 

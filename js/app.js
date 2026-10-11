@@ -1,10 +1,17 @@
 import { STRINGS } from './i18n.js';
 import { createTracker, wordKey } from './align.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { connect } from './cloud.js';
 
 // ============ constants ============
 const KEY = 'mantra-jaap-v3';
 const SET_KEY = 'mantra-jaap-settings';
 const WP_KEY = 'mantra-jaap-wallpaper';
+const SIGNED_KEY = 'mantra-jaap-signed-in';
+// accounts are on once js/config.js is filled in; without them nothing changes
+const AUTH_ON = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+let cloud = null; // Supabase connection, once loaded
+let user = null;  // signed-in user, or null for guests
 const DEFAULT_MANTRA = 'ॐ श्री देवकृष्णाय उर्ध्वान्तकाय नमः ।';
 const PRESETS = [1, 11, 21, 27, 54, 108, 1008];
 const TESS = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/';
@@ -86,18 +93,28 @@ function loadState() {
 }
 const st = loadState();
 if (st.day !== todayKey()) { st.day = todayKey(); st.todayCount = 0; }
-const save = () => store(KEY, st);
+const save = () => { store(KEY, st); queueCloudSave(); };
 
 const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'saffron', bg: '', text: '', hl: '', wallpaper: 'none', dim: 0.5, ts: 26, font: 'classic' };
-const S = { ...DEFAULT_SETTINGS, ...(read(SET_KEY) || {}) };
+// Settings are kept only for signed-in people; guests start from the defaults each visit.
+const keepSettings = () => !AUTH_ON || !!read(SIGNED_KEY);
+const S = { ...DEFAULT_SETTINGS, ...(keepSettings() ? read(SET_KEY) || {} : {}) };
 if (S.ink && !S.text) S.text = S.ink;
 delete S.ink;
 if (!STRINGS[S.uiLang]) { const l = (navigator.language || '').slice(0, 2); S.uiLang = STRINGS[l] ? l : 'en'; }
 if (!LANGS[S.voiceLang]) S.voiceLang = 'hi';
 if (!THEMES[S.theme]) S.theme = 'saffron';
 let wpData = null;
-try { wpData = localStorage.getItem(WP_KEY); } catch (e) {}
-const saveSettings = () => store(SET_KEY, S);
+if (keepSettings()) { try { wpData = localStorage.getItem(WP_KEY); } catch (e) {} }
+let guestNudged = false;
+function saveSettings() {
+  if (AUTH_ON && !user && !read(SIGNED_KEY)) {
+    if (!guestNudged) { guestNudged = true; toast(t('guestToast')); }
+    return;
+  }
+  store(SET_KEY, S);
+  queueCloudSave();
+}
 
 const itemById = (id) => st.items.find((i) => i.id === id);
 const currentItem = () => itemById(st.currentId);
@@ -118,6 +135,7 @@ function applyI18n() {
   if (!$('setSheet').hidden) renderSettings();
   if (!$('startSheet').hidden) renderStart();
   renderTuneLabels();
+  renderAccount();
 }
 
 // ============ toast / sound ============
@@ -221,7 +239,7 @@ function renderHome() {
     $('heroTitle').hidden = !cur.title;
     $('heroText').textContent = cur.text;
     $('heroBar').style.width = Math.round((cur.count / cur.target) * 100) + '%';
-    $('heroMeta').textContent = t('progressMeta', { c: cur.count, t: cur.target, r: cur.rounds + 1 });
+    $('heroMeta').textContent = t('progressMeta', { c: cur.count, t: cur.target, r: cur.rounds });
     $('heroToday').textContent = isLong(cur.text) ? t('kindPrayer') : t('kindMantra');
     renderPlanPill($('heroPlan'), cur, true);
   }
@@ -585,7 +603,7 @@ $('pBack').onclick = leavePractice;
 $('pShare').onclick = () => share(P.item);
 $('pSettings').onclick = openSettings;
 $('pTune').onclick = () => { renderTuneLabels(); openSheet('tuneSheet'); };
-$('pReset').onclick = () => {
+$('resetBtn').onclick = () => {
   if (!P.item.count && !P.item.rounds) return;
   if (!confirm(t('resetConfirm'))) return;
   P.item.count = 0; P.item.rounds = 0; save(); renderCount();
@@ -881,7 +899,6 @@ function setLive(text, cls) {
 }
 function refreshPractice(resetLive = true) {
   const auto = P.mode === 'auto';
-  $('pTitle').textContent = P.item.title || P.item.text.replace(/\s+/g, ' ');
   $('pMode').textContent = auto ? t('modeAloud') : t('modeMind');
   $('pTune').hidden = !auto || P.guide === 'voice';
   $('paceLabel').textContent = t('pace', { n: st.wpm });
@@ -923,7 +940,7 @@ $('mainBtn').addEventListener('click', (e) => {
 $('guideToggle').onclick = toggleGuide;
 $('ring').addEventListener('click', () => add());
 $('strip').querySelector('.mini-ring').addEventListener('click', () => add());
-$('undo').onclick = undo;
+$('pUndo').onclick = undo;
 document.addEventListener('keydown', (e) => {
   if ($('practice').hidden || openSheets.length) return;
   if (/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(document.activeElement?.tagName) && e.code !== 'Space') return;
@@ -1131,16 +1148,216 @@ $('wpInput').onchange = async (e) => {
     c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
     c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
     const data = c.toDataURL('image/jpeg', 0.82);
-    if (!store(WP_KEY, data)) toast(t('wpTooBig'));
+    if (keepSettings() && !store(WP_KEY, data)) toast(t('wpTooBig'));
     wpData = data;
     S.wallpaper = 'custom';
     saveSettings(); applyTheme(); renderSettings();
   } catch (err) { toast(t('ocrBadImage')); }
 };
 
+// ============ accounts ============
+let cloudTimer = 0;
+function queueCloudSave() {
+  if (!cloud || !user) return;
+  clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(pushCloud, 1500);
+}
+async function pushCloud() {
+  if (!cloud || !user) return;
+  try { await cloud.save(user.id, st, { ...S, wpData: S.wallpaper === 'custom' ? wpData : null }); }
+  catch (e) { console.error(e); }
+}
+window.addEventListener('pagehide', () => { if (cloudTimer) pushCloud(); });
+
+// Bring together what is on this device and what is in the account.
+function mergeState(remote) {
+  const byId = new Map(st.items.map((i) => [i.id, i]));
+  for (const r of remote.items || []) {
+    const l = byId.get(r.id);
+    if (!l || (r.updated || 0) >= (l.updated || 0)) byId.set(r.id, r);
+  }
+  // the same text added on two devices: keep the most recently used copy
+  const byText = new Map();
+  for (const it of byId.values()) {
+    const o = byText.get(it.text);
+    if (!o || (it.updated || 0) > (o.updated || 0)) byText.set(it.text, it);
+  }
+  st.items = [...byText.values()];
+  st.total = Math.max(st.total || 0, remote.total || 0);
+  if (remote.day === st.day) st.todayCount = Math.max(st.todayCount || 0, remote.todayCount || 0);
+  for (const k of ['gap', 'sens', 'minLen', 'wpm', 'guide', 'libOpen']) if (remote[k] != null) st[k] = remote[k];
+  if (remote.currentId && itemById(remote.currentId)) st.currentId = remote.currentId;
+  if (!itemById(st.currentId)) st.currentId = null;
+}
+
+async function afterSignIn() {
+  store(SIGNED_KEY, '1');
+  closeSheet('authSheet');
+  let remote = null;
+  try { remote = await cloud.load(user.id); } catch (e) { console.error(e); toast(t('syncError')); }
+  if (remote?.state?.items) mergeState(remote.state);
+  if (remote?.settings && Object.keys(remote.settings).length) {
+    const { wpData: w, ...rest } = remote.settings;
+    Object.assign(S, DEFAULT_SETTINGS, rest);
+    wpData = w || null;
+  }
+  store(KEY, st);
+  store(SET_KEY, S);
+  if (wpData) store(WP_KEY, wpData);
+  pushCloud();
+  if (P.item) P.item = itemById(P.item.id) || P.item;
+  applyTheme();
+  applyI18n();
+  if (!$('practice').hidden) renderCount();
+  renderAccount();
+}
+function afterSignOut() {
+  try { [SIGNED_KEY, SET_KEY, WP_KEY, KEY].forEach((k) => localStorage.removeItem(k)); } catch (e) {}
+  // this device goes back to a fresh guest state; everything stays in the account
+  Object.assign(st, freshState());
+  st.items.push({ ...newItem(DEFAULT_MANTRA, '', 108), updated: 0 });
+  store(KEY, st);
+  const lang = S.uiLang;
+  Object.assign(S, DEFAULT_SETTINGS, { uiLang: lang });
+  wpData = null;
+  if (!$('practice').hidden) leavePractice();
+  applyTheme();
+  applyI18n();
+  renderAccount();
+  toast(t('signedOut'));
+}
+
+function initials(u) {
+  const name = u.user_metadata?.full_name || u.user_metadata?.name || u.email || '?';
+  return name.trim().charAt(0).toUpperCase();
+}
+function fillAvatar(el, u) {
+  el.textContent = '';
+  const pic = u.user_metadata?.avatar_url || u.user_metadata?.picture;
+  if (pic) {
+    const img = document.createElement('img');
+    img.src = pic; img.alt = ''; img.referrerPolicy = 'no-referrer';
+    img.onerror = () => { el.textContent = initials(u); };
+    el.append(img);
+  } else el.textContent = initials(u);
+}
+function renderAccount() {
+  const b = $('accountBtn');
+  b.hidden = !AUTH_ON;
+  if (!AUTH_ON) return;
+  b.classList.toggle('signed', !!user);
+  b.textContent = '';
+  if (user) {
+    const a = document.createElement('span');
+    a.className = 'avatar';
+    fillAvatar(a, user);
+    b.append(a);
+    b.setAttribute('aria-label', t('account'));
+    fillAvatar($('accAvatar'), user);
+    $('accName').textContent = user.user_metadata?.full_name || user.user_metadata?.name || user.email;
+    $('accEmail').textContent = user.email || '';
+  } else {
+    b.textContent = t('signIn');
+    b.setAttribute('aria-label', t('signIn'));
+  }
+  $('guestNote').hidden = !!user;
+}
+$('accountBtn').onclick = () => (user ? openSheet('accountSheet') : openAuth());
+$('guestSignIn').onclick = () => { closeSheet('setSheet'); openAuth(); };
+$('signOutBtn').onclick = async () => {
+  closeSheet('accountSheet');
+  await pushCloud();
+  try { await cloud.signOut(); } catch (e) { console.error(e); }
+  if (user) { user = null; afterSignOut(); }
+};
+
+let authMode = 'signin';
+function openAuth(mode = 'signin') {
+  authMode = mode;
+  renderAuth();
+  openSheet('authSheet');
+}
+function renderAuth() {
+  const recover = authMode === 'recover';
+  $('authMain').hidden = recover;
+  $('recoverForm').hidden = !recover;
+  $('authTitle').textContent = recover ? t('newPassword') : authMode === 'signup' ? t('signUp') : t('signIn');
+  $('authSubmit').textContent = authMode === 'signup' ? t('signUp') : t('signIn');
+  $('authSwitch').textContent = authMode === 'signup' ? t('haveAccount') : t('noAccount');
+  $('authForgot').hidden = authMode === 'signup';
+  $('authPw').autocomplete = authMode === 'signup' ? 'new-password' : 'current-password';
+  authNote('');
+}
+function authNote(msg, cls = '', id = 'authNote') {
+  const n = $(id);
+  n.hidden = !msg; n.textContent = msg; n.className = 'note ' + cls;
+}
+$('authSwitch').onclick = () => { authMode = authMode === 'signup' ? 'signin' : 'signup'; renderAuth(); };
+$('googleBtn').onclick = async () => {
+  try { await cloud.google(); } catch (e) { authNote(e.message || String(e), 'err'); }
+};
+$('authForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = $('authEmail').value.trim(), pw = $('authPw').value;
+  if (!email) return authNote(t('needEmail'), 'err');
+  if (pw.length < 6) return authNote(t('pwShort'), 'err');
+  const btn = $('authSubmit');
+  btn.disabled = true;
+  try {
+    if (authMode === 'signup') {
+      const data = await cloud.signUp(email, pw);
+      if (!data.session) authNote(t('checkEmail'), 'ok'); // email confirmation is on
+    } else {
+      await cloud.signIn(email, pw);
+    }
+  } catch (err) {
+    authNote(err.message || String(err), 'err');
+  } finally {
+    btn.disabled = false;
+  }
+});
+$('authForgot').onclick = async () => {
+  const email = $('authEmail').value.trim();
+  if (!email) { authNote(t('needEmail'), 'err'); $('authEmail').focus(); return; }
+  try { await cloud.sendReset(email); authNote(t('resetSent'), 'ok'); }
+  catch (err) { authNote(err.message || String(err), 'err'); }
+};
+$('recoverForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const pw = $('newPw').value;
+  if (pw.length < 6) return authNote(t('pwShort'), 'err', 'recoverNote');
+  try { await cloud.setPassword(pw); closeSheet('authSheet'); toast(t('passwordSet')); }
+  catch (err) { authNote(err.message || String(err), 'err', 'recoverNote'); }
+});
+
+async function initAccounts() {
+  renderAccount();
+  if (!AUTH_ON) return;
+  try { cloud = await connect(SUPABASE_URL, SUPABASE_ANON_KEY); }
+  catch (e) { console.error(e); $('accountBtn').hidden = true; return; }
+  const signedIn = async (u) => {
+    if (!u || user?.id === u.id) return;
+    const fresh = !read(SIGNED_KEY); // a new sign-in on this device, not a returning visit
+    user = u;
+    renderAccount();
+    await afterSignIn();
+    if (fresh) toast(t('welcome'));
+  };
+  cloud.onChange((event, u) => {
+    if (event === 'PASSWORD_RECOVERY') { user = u; openAuth('recover'); return; }
+    if (u) signedIn(u);
+    else if (user && event === 'SIGNED_OUT') { user = null; afterSignOut(); }
+  });
+  try { await signedIn(await cloud.currentUser()); } catch (e) { console.error(e); }
+  if (!user && read(SIGNED_KEY)) { // the session ended elsewhere
+    try { localStorage.removeItem(SIGNED_KEY); } catch (e) {}
+  }
+}
+
 // ============ start ============
 applyTheme();
 applyI18n();
+initAccounts();
 
 // a shared link (?m=text&n=count&t=title) adds that mantra and opens it
 const params = new URLSearchParams(location.search);

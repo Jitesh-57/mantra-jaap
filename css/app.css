@@ -367,6 +367,30 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 .preview-line .w.cur { background: var(--hl); color: var(--hl-ink); }
 .divider { height: 1px; background: var(--line); margin: 4px 0; }
 
+/* ============ accounts ============ */
+.account-btn { flex: none; margin-right: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; font-weight: 600; font-size: 15px; background: var(--surface-2); border: 1px solid var(--line); color: var(--text); transition: background-color .15s, transform .15s var(--ease); }
+.account-btn.signed { padding: 0; width: 42px; min-height: 42px; border: 0; background: none; }
+.account-btn:active { transform: scale(.95); }
+.avatar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: linear-gradient(140deg, var(--accent), var(--gold)); color: var(--accent-ink); font-weight: 700; font-size: 17px; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-lg { width: 56px; height: 56px; font-size: 22px; flex: none; }
+.profile { display: flex; align-items: center; gap: 14px; }
+.profile b { display: block; font-size: 17px; }
+.profile small { color: var(--text-2); font-size: 14px; overflow-wrap: anywhere; }
+.g-logo { width: 20px; height: 20px; flex: none; }
+.or { display: flex; align-items: center; gap: 12px; color: var(--text-2); font-size: 13px; }
+.or::before, .or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.auth-links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px; margin: -6px -10px 0; }
+.auth-links .btn { min-height: 40px; padding: 0 10px; font-size: 14px; }
+.callout { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--r); background: color-mix(in srgb, var(--accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+.callout p { margin: 0; font-size: 14px; }
+.callout .btn { align-self: flex-start; min-height: 40px; }
+.brand-sm { gap: 10px; padding-left: 0; min-width: 0; }
+.brand-sm .logo { width: 32px; height: 32px; border-radius: 10px; font-size: 18px; }
+.brand-sm b { font-size: 16px; }
+.brand-sm small { font-size: 12px; }
+@media (hover: hover) { .account-btn:not(.signed):hover { background: color-mix(in srgb, var(--surface-2) 85%, var(--text)); } }
+
 /* ============ toast ============ */
 .toast {
   position: fixed; z-index: 70; left: 50%; top: calc(env(safe-area-inset-top) + 14px); transform: translate(-50%, 0);
