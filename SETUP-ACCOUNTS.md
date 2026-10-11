@@ -1,46 +1,36 @@
 # Turning on sign-in (Google + email)
 
-The app works without accounts. Sign-in switches on as soon as `js/config.js`
-has a Supabase project URL and anon key. About 10 minutes, all free.
+Mantra Jaap uses the **same Supabase project as sjpt.io** (`lwworujvfttxkrjfrgav`).
+Its data lives in its own table, `mantra_user_data`, and doesn't touch any sjpt table.
+Sign-in switches on as soon as `js/config.js` has both the project URL and the anon key.
 
-## 1. Create a Supabase project
-1. Go to https://supabase.com/dashboard → **New project** (keep it separate from other apps).
-2. Name it `mantra-jaap`, pick a region close to your users (e.g. Mumbai), set a database password, **Create**.
+## 1. Create the table (once)
+Supabase → **SQL Editor** → **New query** → paste everything from `supabase/schema.sql` → **Run**.
+It only creates `mantra_user_data` with rules so each person can only see their own row.
 
-## 2. Create the table
-1. In the project: **SQL Editor** → **New query**.
-2. Paste everything from `supabase/schema.sql` → **Run**.
-   This creates one private row per user; nobody can read anyone else's data.
+## 2. Allow the Mantra Jaap address
+Supabase → **Authentication → URL Configuration → Redirect URLs** → **Add URL**:
+`https://mantra-jaap-delta.vercel.app/**`
 
-## 3. Website address
-**Authentication → URL Configuration**
-- Site URL: `https://mantra-jaap-delta.vercel.app`
-- Redirect URLs → Add: `https://mantra-jaap-delta.vercel.app/**`
-  (add your own domain too if you connect one later)
+Leave the **Site URL** as sjpt.io. Mantra Jaap passes its own address when it signs people in.
 
-## 4. Email sign-in
-**Authentication → Sign In / Providers → Email**: enabled (default).
-"Confirm email" on is recommended — new users get a confirmation link.
-
-## 5. Google sign-in
-1. https://console.cloud.google.com → create/select a project.
-2. **APIs & Services → OAuth consent screen**: External, app name "Mantra Jaap", your email → save.
-3. **APIs & Services → Credentials → Create credentials → OAuth client ID**
-   - Application type: **Web application**
-   - Authorised redirect URI: `https://<your-project-ref>.supabase.co/auth/v1/callback`
-     (copy the exact value from Supabase → Authentication → Providers → Google)
-4. Copy the **Client ID** and **Client secret** into Supabase → **Authentication → Providers → Google** → enable → Save.
-
-## 6. Connect the app
-Supabase → **Project Settings → API**: copy **Project URL** and the **anon public** key into `js/config.js`:
+## 3. Anon key
+Supabase → **Project Settings → API** → copy the **anon public** key
+(the same value as `NEXT_PUBLIC_SUPABASE_ANON_KEY` in the sjpt Vercel project)
+into `js/config.js`:
 
 ```js
-export const SUPABASE_URL = 'https://xxxx.supabase.co';
 export const SUPABASE_ANON_KEY = 'eyJ...';
 ```
 
-Both values are designed to be public; the table's security rules protect the data.
-Push to `main` and Vercel publishes it.
+It is designed to be public; the table rules protect the data. Push to `main` and Vercel publishes it.
+
+Google and email sign-in are already enabled in this project for sjpt.io, so nothing else is needed.
+
+## Good to know with a shared project
+- One login works for both apps: someone with an sjpt.io account can sign in to Mantra Jaap with it, and the reverse.
+- The Google consent screen and the confirmation / password-reset emails use the names set up for sjpt.io.
+- Both apps share the project's free-tier limits (50,000 monthly active users, 500 MB database).
 
 ## How it behaves
 - **Guests** can use everything, but settings (theme, language, colours, wallpaper…) reset on the next visit.
