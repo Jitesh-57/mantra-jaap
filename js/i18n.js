@@ -172,7 +172,7 @@ export const STRINGS = {
     welcome: 'Signed in · your data is saved',
     signedOut: 'Signed out',
     syncError: 'Could not reach your account. Changes are kept on this device.',
-    saveSettings: 'Save settings',
+    saveSettings: 'Save Settings',
     settingsSaved: 'Settings saved ✓',
     savedState: 'Saved',
     notSaved: 'Changes not saved — tap Save settings to keep them',

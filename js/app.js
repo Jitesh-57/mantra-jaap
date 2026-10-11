@@ -113,7 +113,7 @@ function saveSettings() {
   const dirty = settingsDirty();
   const b = $('setSave');
   b.classList.toggle('dirty', dirty);
-  b.querySelector('span').textContent = dirty ? t('saveSettings') : t('savedState');
+  b.querySelector('span').textContent = t('saveSettings');
 }
 
 const itemById = (id) => st.items.find((i) => i.id === id);
