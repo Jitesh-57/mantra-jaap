@@ -636,6 +636,7 @@ function buildReader() {
   const box = $('reader');
   const pill = $('hlPill');
   box.textContent = '';
+  box.classList.remove('sweep');
   box.append(pill);
   pill.classList.remove('on');
   box.scrollTop = 0;
@@ -1103,7 +1104,13 @@ function renderCount(bump, complete) {
     for (const c of [$('count'), $('mCount')]) { c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
     replay($('ripple'), 'go');
     if (lit > 0) replay(beads[lit - 1], 'pop');
-    if (!$('practice').classList.contains('long')) replay($('reader'), 'sweep');
+    if (!$('practice').classList.contains('long')) {
+      const r = $('reader');
+      replay(r, 'sweep');
+      // switch the shimmer off once it has passed over every word
+      clearTimeout(sweepTimer);
+      sweepTimer = setTimeout(() => r.classList.remove('sweep'), 900 + P.words.length * 70 + 100);
+    }
   }
   if (complete) {
     for (const [el, cls] of [[$('ring'), 'complete'], [$('strip'), 'done']]) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
@@ -1112,6 +1119,7 @@ function renderCount(bump, complete) {
   }
 }
 
+let sweepTimer = 0;
 // restart a CSS animation on an element (also SVG beads)
 function replay(el, cls) {
   if (!el) return;

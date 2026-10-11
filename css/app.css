@@ -399,7 +399,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 .ring .ripple.go { animation: ripple 1s ease-out; }
 @keyframes ripple { 0% { opacity: .5; transform: scale(.6); stroke-width: 7; } 100% { opacity: 0; transform: scale(1.1); stroke-width: 1; } }
 .reader.sweep .w:not(.cur) { animation: sweep .9s ease calc(var(--i) * 70ms); }
-@keyframes sweep { 35% { color: var(--gold); text-shadow: 0 0 16px color-mix(in srgb, var(--gold) 75%, transparent); } }
+@keyframes sweep { 35% { filter: brightness(1.7) drop-shadow(0 0 10px var(--gold)); } }
 
 /* the mala breathes while listening, a little faster while you speak */
 .ring::before {
