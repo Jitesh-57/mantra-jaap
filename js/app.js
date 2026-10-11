@@ -59,7 +59,7 @@ function read(key) { try { return JSON.parse(localStorage.getItem(key)); } catch
 
 // ============ state ============
 function freshState() {
-  return { items: [], currentId: null, libOpen: true, day: todayKey(), todayCount: 0, total: 0, gap: 0.7, sens: 5, minLen: 1.2, wpm: 60 };
+  return { items: [], currentId: null, libOpen: true, day: todayKey(), todayCount: 0, total: 0, gap: 0.7, sens: 5, minLen: 1.2, wpm: 60, guide: 'voice' };
 }
 function newItem(text, title = '', target) {
   return { id: uid(), title, text, target: target || (isLong(text) ? 1 : 108), count: 0, rounds: 0, updated: Date.now() };
@@ -223,6 +223,7 @@ function renderHome() {
     $('heroBar').style.width = Math.round((cur.count / cur.target) * 100) + '%';
     $('heroMeta').textContent = t('progressMeta', { c: cur.count, t: cur.target, r: cur.rounds + 1 });
     $('heroToday').textContent = isLong(cur.text) ? t('kindPrayer') : t('kindMantra');
+    renderPlanPill($('heroPlan'), cur, true);
   }
   const list = $('list');
   list.textContent = '';
@@ -240,7 +241,9 @@ function renderHome() {
       <button class="icon-btn" data-act="edit">${icon('pen', 'i i-sm')}</button>
       <button class="icon-btn" data-act="del">${icon('trash', 'i i-sm')}</button>`;
     row.querySelector('b').textContent = it.title || it.text.replace(/\s+/g, ' ');
-    row.querySelector('small').textContent = `${long ? t('kindPrayer') : t('kindMantra')} · ${t('timesN', { n: it.target })}`;
+    const pi = planInfo(it);
+    row.querySelector('small').textContent = `${long ? t('kindPrayer') : t('kindMantra')} · ${t('timesN', { n: it.target })}` +
+      (pi ? ' · ' + (pi.over ? t('planDone', { n: pi.n }) : t('dayOf', { d: pi.day, n: pi.n })) : '');
     const [edit, del] = row.querySelectorAll('[data-act]');
     edit.setAttribute('aria-label', t('edit')); edit.title = t('edit');
     del.setAttribute('aria-label', t('delete')); del.title = t('delete');
@@ -269,44 +272,90 @@ $('addCamera').onclick = () => $('camInput').click();
 $('addPhoto').onclick = () => $('imgInput').click();
 
 // ============ start sheet ============
-let startItem = null, startMode = null, startTarget = 108, customOpen = false;
+const DAY_PRESETS = [0, 7, 11, 21, 40, 108]; // 0 = no limit
+let startItem = null, startMode = null, startTarget = 108, startDays = 0;
+let countEditing = false, dayEditing = false;
+
 function openStart(item) {
-  startItem = item; startMode = null; startTarget = item.target;
-  customOpen = !PRESETS.includes(item.target);
+  startItem = item;
+  startMode = item.mode || null; // remembered from last time, still changeable
+  startTarget = item.target;
+  startDays = item.plan?.days || 0;
+  countEditing = dayEditing = false;
   renderStart();
   openSheet('startSheet');
+}
+// a row of number chips; "Custom" opens a field that is confirmed with OK
+function renderChoice(box, presets, value, editing, label, onPick, onCustom) {
+  box.textContent = '';
+  for (const n of presets) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip';
+    b.textContent = label(n);
+    b.setAttribute('aria-pressed', !editing && value === n);
+    b.onclick = () => onPick(n);
+    box.append(b);
+  }
+  const custom = !presets.includes(value) && !editing;
+  const c = document.createElement('button');
+  c.type = 'button'; c.className = 'chip';
+  c.textContent = custom ? label(value) : t('custom');
+  if (custom) c.insertAdjacentHTML('beforeend', icon('check'));
+  c.setAttribute('aria-pressed', editing || custom);
+  c.onclick = onCustom;
+  box.append(c);
 }
 function renderStart() {
   const it = startItem;
   if (!it) return;
   $('startTitle').textContent = it.title || (isLong(it.text) ? t('kindPrayer') : t('kindMantra'));
   $('startPreview').textContent = it.text;
-  const chips = $('countChips');
-  chips.textContent = '';
-  for (const n of PRESETS) {
-    const b = document.createElement('button');
-    b.className = 'chip'; b.textContent = n;
-    b.setAttribute('aria-pressed', !customOpen && startTarget === n);
-    b.onclick = () => { customOpen = false; startTarget = n; renderStart(); };
-    chips.append(b);
+
+  renderChoice($('countChips'), PRESETS, startTarget, countEditing, String,
+    (n) => { startTarget = n; countEditing = false; renderStart(); },
+    () => { countEditing = true; renderStart(); $('countInput').value = PRESETS.includes(startTarget) ? '' : startTarget; $('countInput').focus(); });
+  $('countForm').hidden = !countEditing;
+
+  renderChoice($('dayChips'), DAY_PRESETS, startDays, dayEditing, (n) => (n ? t('daysN', { n }) : t('noLimit')),
+    (n) => { startDays = n; dayEditing = false; renderStart(); },
+    () => { dayEditing = true; renderStart(); $('dayInput').value = DAY_PRESETS.includes(startDays) ? '' : startDays; $('dayInput').focus(); });
+  $('dayForm').hidden = !dayEditing;
+
+  // tell the user whether an existing sankalp continues or starts again
+  const note = $('dayNote'), p = planInfo(it);
+  let msg = '';
+  if (startDays && !dayEditing) {
+    if (p && !p.over && it.plan.days === startDays) msg = t('planKeep', { d: p.day, n: p.n });
+    else if (it.plan) msg = t('planRestart');
+    else msg = t('dayOf', { d: 1, n: startDays });
   }
-  const c = document.createElement('button');
-  c.className = 'chip'; c.textContent = t('custom');
-  c.setAttribute('aria-pressed', customOpen);
-  c.onclick = () => { customOpen = true; renderStart(); $('countInput').focus(); };
-  chips.append(c);
-  $('countInput').hidden = !customOpen;
-  if (customOpen) $('countInput').value = startTarget;
+  note.hidden = !msg;
+  note.textContent = msg;
+
   $$('.option', $('startSheet')).forEach((o) => o.setAttribute('aria-pressed', o.dataset.mode === startMode));
   $('beginBtn').disabled = !startMode;
   $('beginBtn').textContent = startMode ? t('begin') : t('chooseMode');
 }
-$('countInput').addEventListener('input', (e) => { startTarget = clampCount(e.target.value, startTarget); });
+$('countForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const v = clampCount($('countInput').value, 0);
+  if (!v) { $('countInput').focus(); return; }
+  startTarget = v; countEditing = false; renderStart();
+});
+$('dayForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const v = Math.min(3650, clampCount($('dayInput').value, 0));
+  if (!v) { $('dayInput').focus(); return; }
+  startDays = v; dayEditing = false; renderStart();
+});
 $$('.option', $('startSheet')).forEach((o) => { o.onclick = () => { startMode = o.dataset.mode; renderStart(); }; });
 $('beginBtn').onclick = () => {
   const it = startItem;
   if (!it || !startMode) return;
   if (it.target !== startTarget) { it.target = startTarget; if (it.count >= it.target) it.count = 0; }
+  if (!startDays) it.plan = null;
+  else if (!it.plan || it.plan.days !== startDays || planInfo(it).over) it.plan = { days: startDays, start: todayKey(), done: [] };
+  it.mode = startMode;
   st.currentId = it.id; it.updated = Date.now();
   save();
   closeSheet('startSheet');
@@ -314,6 +363,31 @@ $('beginBtn').onclick = () => {
 };
 $('startEdit').onclick = () => { closeSheet('startSheet'); openEditor(startItem); };
 $('startShare').onclick = () => share(startItem);
+
+// ============ sankalp (day plan) ============
+const dayDiff = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
+function planInfo(it) {
+  const p = it?.plan;
+  if (!p) return null;
+  const day = dayDiff(p.start, todayKey()) + 1;
+  return { n: p.days, day: Math.min(Math.max(day, 1), p.days), left: Math.max(0, p.days - day), over: day > p.days, doneToday: (p.done || []).includes(todayKey()) };
+}
+function planText(it) {
+  const p = planInfo(it);
+  if (!p) return '';
+  if (p.over) return t('planDone', { n: p.n });
+  const left = p.left === 0 ? t('lastDay') : p.left === 1 ? t('oneDayLeft') : t('daysLeft', { n: p.left });
+  return `${t('dayOf', { d: p.day, n: p.n })} · ${left}`;
+}
+function renderPlanPill(el, it, withToday) {
+  const p = planInfo(it);
+  el.hidden = !p;
+  if (!p) return;
+  const done = p.doneToday || p.over;
+  el.classList.toggle('done', done);
+  el.innerHTML = icon(done ? 'check' : 'calendar');
+  el.append(planText(it) + (withToday && p.doneToday && !p.over ? ' · ' + t('todayDone') : ''));
+}
 
 // ============ editor ============
 let editing = null;
@@ -496,7 +570,7 @@ function startPractice(item, mode) {
   buildReader();
   buildRing();
   renderCount();
-  let g = item.guide || (isLong(item.text) ? (SR ? 'voice' : 'pace') : 'off');
+  let g = st.guide || 'voice';
   if (g === 'voice' && !SR) g = 'pace';
   setGuide(g, false);
 }
@@ -522,10 +596,11 @@ function buildReader() {
   const box = $('reader');
   box.textContent = '';
   box.scrollTop = 0;
-  P.words = []; P.spans = []; P.speak = [];
+  P.words = []; P.spans = []; P.speak = []; P.lines = []; P.lineOf = []; P.curLine = -1;
   for (const line of P.item.text.split(/\r?\n/)) {
     const ln = document.createElement('span');
     ln.className = 'line';
+    P.lines.push(ln);
     const ws = line.split(/\s+/).filter(Boolean);
     if (!ws.length) ln.innerHTML = '&nbsp;';
     ws.forEach((w, k) => {
@@ -533,7 +608,7 @@ function buildReader() {
       s.className = 'w'; s.textContent = w; s.dataset.i = P.words.length;
       ln.append(s);
       if (k < ws.length - 1) ln.append(' ');
-      P.words.push(w); P.spans.push(s); P.speak.push(!!wordKey(w));
+      P.words.push(w); P.spans.push(s); P.speak.push(!!wordKey(w)); P.lineOf.push(P.lines.length - 1);
     });
     box.append(ln);
   }
@@ -550,13 +625,28 @@ function setPos(p) {
   const to = P.lastPos < 0 ? n : Math.min(n, Math.max(P.lastPos, p) + 2);
   for (let i = from; i < to; i++) P.spans[i].className = i < p ? 'w read' : i === p ? 'w cur' : 'w';
   P.lastPos = p; P.pos = p;
+  // long prayers read like song lyrics: the current line is lit, the rest fade
+  const li = p < n ? P.lineOf[p] : P.lines.length;
+  if (li !== P.curLine) {
+    P.curLine = li;
+    P.lines.forEach((el, k) => { el.className = 'line' + (k < li ? ' past' : k === li ? ' now' : ''); });
+  }
+  $('readBar').style.width = (n ? (p / n) * 100 : 0) + '%';
   followWord(p);
 }
 // keep the current word comfortably in view without jumping on every word
 function followWord(p) {
   const box = $('reader');
+  if (box.scrollHeight <= box.clientHeight + 4) return;
+  if ($('practice').classList.contains('long')) {
+    const line = P.lines[P.curLine];
+    if (!line) return;
+    const top = line.offsetTop + line.offsetHeight / 2 - box.clientHeight / 2;
+    if (Math.abs(box.scrollTop - top) > 4) box.scrollTo({ top, behavior: 'smooth' });
+    return;
+  }
   const el = P.spans[Math.min(p, P.spans.length - 1)];
-  if (!el || box.scrollHeight <= box.clientHeight + 4) return;
+  if (!el) return;
   const top = el.offsetTop, h = box.clientHeight;
   if (top < box.scrollTop + h * 0.15 || top > box.scrollTop + h * 0.62) box.scrollTo({ top: Math.max(0, top - h * 0.3), behavior: 'smooth' });
 }
@@ -574,7 +664,7 @@ function setGuide(g, persist = true) {
   if (g === 'voice' && !SR) { toast(t('noSR')); g = 'pace'; }
   stopAll();
   P.guide = g;
-  if (persist) { P.item.guide = g; save(); }
+  if (persist) { st.guide = g; save(); }
   $$('#guideSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.guide === g));
   $('paceRow').hidden = g !== 'pace';
   $('wpm').value = st.wpm;
@@ -832,6 +922,7 @@ $('mainBtn').addEventListener('click', (e) => {
 });
 $('guideToggle').onclick = toggleGuide;
 $('ring').addEventListener('click', () => add());
+$('strip').querySelector('.mini-ring').addEventListener('click', () => add());
 $('undo').onclick = undo;
 document.addEventListener('keydown', (e) => {
   if ($('practice').hidden || openSheets.length) return;
@@ -846,7 +937,10 @@ function add(opts = {}) {
   const it = P.item;
   it.count++; st.todayCount++; st.total++; it.updated = Date.now();
   let complete = false;
-  if (it.count >= it.target) { it.rounds++; it.count = 0; complete = true; }
+  if (it.count >= it.target) {
+    it.rounds++; it.count = 0; complete = true;
+    if (it.plan) { it.plan.done ||= []; if (!it.plan.done.includes(todayKey())) it.plan.done.push(todayKey()); }
+  }
   save();
   renderCount(true, complete);
   if (complete) {
@@ -906,17 +1000,22 @@ function renderCount(bump, complete) {
   const shown = complete ? it.target : it.count;
   $('count').textContent = shown;
   $('of').textContent = t('of', { n: it.target });
-  $('sRound').textContent = it.rounds + (complete ? 0 : 1);
+  $('sRound').textContent = it.rounds;
+  $('mCount').textContent = shown;
+  $('mOf').textContent = t('recitations', { c: shown, t: it.target });
+  $('mSub').textContent = t('stripSub', { r: it.rounds, n: st.todayCount });
+  $('miniArc').style.strokeDashoffset = (131.95 * (1 - shown / it.target)).toFixed(2);
+  renderPlanPill($('sPlan'), it, true);
+  renderPlanPill($('mPlan'), it, false);
   $('sToday').textContent = st.todayCount;
   $('sTotal').textContent = st.total;
   const frac = shown / it.target;
   $('arc').style.strokeDashoffset = (578 * (1 - frac)).toFixed(1);
   const lit = Math.floor(frac * beads.length);
   beads.forEach((b, i) => b.setAttribute('class', 'bead' + (i < lit ? ' done' : '') + (i === lit - 1 ? ' current' : '')));
-  if (bump) { const c = $('count'); c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
+  if (bump) for (const c of [$('count'), $('mCount')]) { c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
   if (complete) {
-    const ring = $('ring');
-    ring.classList.remove('complete'); void ring.offsetWidth; ring.classList.add('complete');
+    for (const [el, cls] of [[$('ring'), 'complete'], [$('strip'), 'done']]) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
     setTimeout(() => renderCount(), 1200);
   }
 }
