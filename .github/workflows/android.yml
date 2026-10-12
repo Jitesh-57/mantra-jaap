@@ -18,7 +18,7 @@ jobs:
     env:
       VERSION_CODE: ${{ github.run_number }}
       VERSION_NAME: 1.0.${{ github.run_number }}
-      HAS_RELEASE_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      HAS_RELEASE_KEY: ${{ secrets.ANDROID_KEYSTORE_PASSWORD != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -48,12 +48,11 @@ jobs:
         if: env.HAS_RELEASE_KEY == 'true'
         working-directory: android
         env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/android/upload.jks
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: upload
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.jks"
-          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/release.jks"
           ./gradlew --no-daemon bundleRelease -PversionCode=$VERSION_CODE -PversionName=$VERSION_NAME
 
       - name: Collect files
@@ -78,6 +77,7 @@ jobs:
           files: |
             dist/japsadhna.apk
             dist/mantra-jaap.apk
+            dist/japsadhna-play.aab
           body: |
             **Install on your phone:** open this page on the phone, tap **japsadhna.apk**, then open the downloaded file.
             If Android asks, allow "Install unknown apps" for your browser. New versions install over the old one.

@@ -207,6 +207,9 @@ export const STRINGS = {
     pasteBtn: 'Add copied prayer',
     pastedNote: 'Pasted from what you copied. Please check the text, add a title and save.',
     pasteHere: 'Paste the prayer you copied into the box below, then save.',
+    deleteAccount: 'Delete my account',
+    deleteAccConfirm: 'Delete your account? Your saved mantras, counts and settings will be deleted from the cloud now, and you will be signed out. An email to us will open so we can remove your login too.',
+    deleteAccDone: 'Your saved data is deleted. Send the email to finish removing your login.',
   },
 
   hi: {
@@ -415,6 +418,9 @@ export const STRINGS = {
     pasteBtn: 'कॉपी की हुई प्रार्थना जोड़ें',
     pastedNote: 'आपके कॉपी किए गए पाठ से भरा गया है। पाठ जाँच लें, शीर्षक लिखें और सहेजें।',
     pasteHere: 'कॉपी की हुई प्रार्थना नीचे बॉक्स में पेस्ट करें, फिर सहेजें।',
+    deleteAccount: 'मेरा खाता हटाएँ',
+    deleteAccConfirm: 'खाता हटाएँ? आपके सहेजे गए मंत्र, गिनती और सेटिंग्स अभी क्लाउड से हट जाएँगे और आप साइन आउट हो जाएँगे। आपका लॉगिन हटाने के लिए हमें एक ईमेल खुलेगा।',
+    deleteAccDone: 'आपका सहेजा डेटा हटा दिया गया। लॉगिन हटाने के लिए ईमेल भेजें।',
   },
 
   mr: {
@@ -623,5 +629,8 @@ export const STRINGS = {
     pasteBtn: 'कॉपी केलेली प्रार्थना जोडा',
     pastedNote: 'तुम्ही कॉपी केलेल्या मजकुरातून भरले आहे. मजकूर तपासा, शीर्षक लिहा आणि जतन करा.',
     pasteHere: 'कॉपी केलेली प्रार्थना खालील बॉक्समध्ये पेस्ट करा, मग जतन करा.',
+    deleteAccount: 'माझे खाते हटवा',
+    deleteAccConfirm: 'खाते हटवायचे? तुमचे जतन केलेले मंत्र, मोजणी आणि सेटिंग्ज आत्ताच क्लाउडमधून हटवले जातील आणि तुम्ही साइन आउट व्हाल. तुमचे लॉगिन हटवण्यासाठी आम्हाला एक ईमेल उघडेल.',
+    deleteAccDone: 'तुमचा जतन केलेला डेटा हटवला. लॉगिन हटवण्यासाठी ईमेल पाठवा.',
   },
 };

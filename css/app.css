@@ -500,6 +500,7 @@ body.has-wp .bead:not(.done):not(.meru) { fill: color-mix(in srgb, var(--text) 5
 
 .policy-link { align-self: center; font-size: 14px; color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; padding: 6px; }
 .policy-link:hover { color: var(--text); }
+.policy-link.btn-danger { color: var(--danger); background: none; border: 0; font: inherit; font-size: 14px; cursor: pointer; }
 
 /* ============ toast ============ */
 .toast {

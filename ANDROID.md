@@ -38,17 +38,15 @@ Needs Node 22, JDK 21 and Android Studio / Android SDK 36.
 
 ## Publishing on Google Play
 
-1. **Create an upload key** (keep the file and passwords safe — Play needs the same key for every update):
+1. **Upload key**: `android/upload.jks` (alias `upload`). The file is protected by a password that is
+   stored only in the GitHub secret `ANDROID_KEYSTORE_PASSWORD` (repo → Settings → Secrets and variables →
+   Actions). Keep that password safe as well — Play needs the same upload key for every update
+   (if it is ever lost, the key can be reset through Play Console support).
 
-       keytool -genkeypair -v -keystore japsadhna-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
+2. When the secret is set, every build also publishes **`japsadhna-play.aab`** on the releases page.
+   The Play package name is `myapp.japsadhna`.
 
-2. **Add GitHub secrets** (repo → Settings → Secrets and variables → Actions):
-   - `ANDROID_KEYSTORE_BASE64` – output of `base64 -w0 japsadhna-upload.jks`
-   - `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (`upload`), `ANDROID_KEY_PASSWORD`
-
-   The next build then also produces `japsadhna-play.aab` (in the workflow run's artifacts) for Play Console.
-
-3. **Play Console** (one-time $25): create the app "JapSadhna", turn on Play App Signing, upload the `.aab`
+3. **Play Console** (one-time $25): create the app "JapSadhna", turn on Play App Signing, upload `japsadhna-play.aab`
    to Internal testing first.
    - Store listing artwork: `store/icon_512.png`, `store/feature_1024x500.png`, plus phone screenshots.
    - Privacy policy URL is required (the app uses the microphone, camera and accounts).

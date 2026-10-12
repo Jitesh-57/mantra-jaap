@@ -30,6 +30,7 @@ export async function connect(url, anonKey, env) {
     async sendReset(email) { ok(await sb.auth.resetPasswordForEmail(email, { redirectTo: env.linkBack })); },
     async setPassword(password) { ok(await sb.auth.updateUser({ password })); },
     async signOut() { ok(await sb.auth.signOut()); },
+    async removeData(userId) { ok(await sb.from(TABLE).delete().eq('user_id', userId)); },
     async load(userId) { return ok(await sb.from(TABLE).select('state, settings').eq('user_id', userId).maybeSingle()); },
     async save(userId, state, settings) {
       ok(await sb.from(TABLE).upsert({ user_id: userId, state, settings, updated_at: new Date().toISOString() }));

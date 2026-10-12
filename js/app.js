@@ -1531,6 +1531,22 @@ $('signOutBtn').onclick = async () => {
   if (user) { user = null; afterSignOut(); }
 };
 
+// Deleting an account: the saved data goes now; the login itself is removed by us on request (email).
+const CONTACT = 'patil.jitesh866@gmail.com';
+$('deleteAccBtn').onclick = async () => {
+  if (!user || !confirm(t('deleteAccConfirm'))) return;
+  const email = user.email || '';
+  closeSheet('accountSheet');
+  clearTimeout(cloudTimer); cloudTimer = 0;
+  try { await cloud.removeData(user.id); } catch (e) { console.error(e); }
+  try { await cloud.signOut(); } catch (e) { console.error(e); }
+  user = null; afterSignOut();
+  toast(t('deleteAccDone'));
+  const subject = encodeURIComponent('Delete my JapSadhna account');
+  const body = encodeURIComponent(`Please delete my JapSadhna account: ${email}`);
+  setTimeout(() => { location.href = `mailto:${CONTACT}?subject=${subject}&body=${body}`; }, 600);
+};
+
 let authMode = 'signin';
 function openAuth(mode = 'signin') {
   authMode = mode;

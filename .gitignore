@@ -9,3 +9,5 @@ android/app/release/
 *.jks
 
 !android/app/debug.keystore
+# Play upload key: password-protected; the password is only in the GitHub secret
+!android/upload.jks

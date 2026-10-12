@@ -4,7 +4,7 @@ android {
     namespace = "com.sjpt.mantrajaap"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.sjpt.mantrajaap"
+        applicationId "myapp.japsadhna" // must match the app in Play Console
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // set by the build workflow: -PversionCode=… -PversionName=…
