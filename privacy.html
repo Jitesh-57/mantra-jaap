@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#140c07">
 <title>Privacy Policy · JapSadhna</title>
-<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="icon" type="image/png" href="/img/favicon.png">
 <meta name="description" content="How the JapSadhna app and website handle your information.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,10 +28,7 @@
   }
   main { max-width: 720px; margin: 0 auto; }
   header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
-  .logo {
-    display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; flex: none;
-    background: linear-gradient(140deg, #f08a24, #f2c14e); color: #1a0f08; font-size: 26px; padding-top: 3px;
-  }
+  .logo { display: block; width: 48px; height: 48px; border-radius: 14px; flex: none; background: #fefdf9; object-fit: cover; }
   header a { color: inherit; text-decoration: none; font-weight: 700; font-size: 20px; }
   h1 { font-size: 34px; line-height: 1.2; margin: 28px 0 4px; }
   .meta { color: var(--text-2); margin: 0 0 24px; }
@@ -53,12 +50,12 @@
 <body>
 <main>
   <header>
-    <span class="logo" aria-hidden="true">ॐ</span>
+    <img class="logo" src="/img/logo.png" alt="" aria-hidden="true">
     <a href="/">JapSadhna</a>
   </header>
 
   <h1>Privacy Policy</h1>
-  <p class="meta">Effective 11 October 2026 · applies to the JapSadhna Android app and the website mantra-jaap-delta.vercel.app</p>
+  <p class="meta">Effective 12 October 2026 · applies to the JapSadhna Android app and the website mantra-jaap-delta.vercel.app</p>
 
   <p>JapSadhna helps you count mantra jaap and read prayers. This policy explains what information the app uses, why, and the choices you have. We have tried to keep it short and plain.</p>
 
@@ -68,7 +65,7 @@
       <li><strong>The microphone is used only while you press Start</strong>, to count recitations and follow your voice. We never record or store your voice.</li>
       <li><strong>The camera and photos are used only when you choose to scan a prayer.</strong> The text is read on your device and the photo is not uploaded.</li>
       <li><strong>If you sign in</strong>, your email and your mantras, counts and settings are stored in your account so you can use them on any device.</li>
-      <li><strong>The app may show ads from Google AdMob</strong>, which may use your device's advertising ID.</li>
+      <li><strong>The app does not show ads</strong> and does not use your device's advertising ID.</li>
       <li><strong>We do not sell your personal information.</strong></li>
     </ul>
   </div>
@@ -99,7 +96,7 @@
   <p>If you choose your own photo as a wallpaper, a smaller copy is kept on your device and, if you are signed in, in your account settings.</p>
 
   <h3>Advertising</h3>
-  <p>The app may show ads provided by Google AdMob. To show and measure ads, and to limit fraud, AdMob may collect your device's advertising ID, IP address, approximate location derived from it, device and app information, and how you interact with ads. Where required, you will be asked for consent first. You can reset your advertising ID or opt out of personalised ads in your device settings (<em>Settings → Google → Ads</em> or <em>Settings → Privacy → Ads</em>). See <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">how Google uses information from sites or apps that use its services</a>.</p>
+  <p>The app does not show ads and does not use your device's advertising ID. If a future version adds ads, we will update this policy before that version is released.</p>
 
   <h3>Technical information</h3>
   <p>Like any website or app that loads content over the internet, the services below receive your IP address and basic device and browser information when the app connects to them. We do not use analytics or tracking tools of our own.</p>
@@ -110,7 +107,6 @@
     <tr><td>Supabase</td><td>Sign-in and storage of account data</td><td>Email, Google name and photo, your practice data and settings</td></tr>
     <tr><td>Google Sign-In</td><td>Signing in with your Google account</td><td>Your Google account details you agree to share</td></tr>
     <tr><td>Device or browser speech recognition</td><td>Follow voice</td><td>Audio while listening is on</td></tr>
-    <tr><td>Google AdMob</td><td>Ads</td><td>Advertising ID, IP address, device and ad-interaction information</td></tr>
     <tr><td>Vercel</td><td>Hosting the website</td><td>IP address and request information</td></tr>
     <tr><td>jsDelivr and Google Fonts</td><td>Delivering code libraries (sign-in, text scanning) and fonts</td><td>IP address and request information</td></tr>
   </table>
@@ -120,15 +116,14 @@
     <li>To count your jaap, highlight what you are reading and keep your progress.</li>
     <li>To keep your mantras, counts and settings in your account and on your devices.</li>
     <li>To sign you in and keep your account secure.</li>
-    <li>To show ads that keep the app free.</li>
   </ul>
-  <p>We do not sell your personal information, and we do not use your mantras, prayers or voice for advertising.</p>
+  <p>We do not sell your personal information, and we do not use your mantras, prayers or voice for advertising or any purpose other than running the app.</p>
 
   <h2 id="delete">4. Keeping and deleting your information</h2>
   <ul>
     <li><strong>On your device:</strong> delete any mantra from the list in the app, or reset its counts. Uninstalling the app removes everything stored on the device.</li>
     <li><strong>In your account:</strong> your data is kept while your account exists. Signing out removes it from that device but keeps it in your account.</li>
-    <li><strong>Deleting your account:</strong> in the app, tap your picture → <em>Delete my account</em>. Your saved mantras, counts and settings are deleted at once, and an email to us opens to remove the login itself. You can also simply email us from the address you signed in with and ask us to delete your account. We will delete your account and all its data within 30 days and confirm by email.</li>
+    <li><strong>Deleting your account:</strong> in the app, tap your picture → <em>Delete my account</em>. Your saved mantras, counts and settings are deleted at once, and an email to us opens to remove the login itself. You can also request deletion on the <a href="/delete-account">delete account page</a>, or simply email us from the address you signed in with. We will delete your account and all its data within 30 days and confirm by email.</li>
   </ul>
 
   <h2>5. Security</h2>
@@ -149,7 +144,7 @@
 
   <h2>9. Contact</h2>
   <p>Questions, requests or account deletion:<br>
-    <a class="contact" href="mailto:patil.jitesh866@gmail.com?subject=Mantra%20Jaap%20privacy">patil.jitesh866@gmail.com</a></p>
+    <a class="contact" href="mailto:patil.jitesh866@gmail.com?subject=JapSadhna%20privacy">patil.jitesh866@gmail.com</a></p>
 
   <footer>© 2026 JapSadhna</footer>
 </main>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#140c07">
+<title>Delete your account · JapSadhna</title>
+<link rel="icon" type="image/png" href="/img/favicon.png">
+<meta name="description" content="How to delete your JapSadhna account and the data stored with it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #140c07; --surface: #1f150e; --line: #3a2a1c; --text: #f7ebdc; --text-2: #b89f84;
+    --accent: #f08a24; --gold: #f2c14e;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #faf5ec; --surface: #ffffff; --line: #e6d8c0; --text: #2b1d10; --text-2: #6f5843; --accent: #c2410c; --gold: #b45309; color-scheme: light; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.65 'Mukta', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    padding: max(20px, env(safe-area-inset-top)) 16px max(40px, env(safe-area-inset-bottom));
+  }
+  main { max-width: 720px; margin: 0 auto; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .logo { display: block; width: 48px; height: 48px; border-radius: 14px; flex: none; background: #fefdf9; object-fit: cover; }
+  header a { color: inherit; text-decoration: none; font-weight: 700; font-size: 20px; }
+  h1 { font-size: 34px; line-height: 1.2; margin: 28px 0 4px; }
+  .meta { color: var(--text-2); margin: 0 0 24px; }
+  h2 { font-size: 21px; margin: 34px 0 8px; padding-top: 18px; border-top: 1px solid var(--line); }
+  h3 { font-size: 17px; margin: 18px 0 4px; }
+  p, li { color: var(--text); }
+  ul { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  a { color: var(--accent); }
+  .summary { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 6px 20px; }
+  .summary li { margin: 8px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--text-2); font-weight: 600; }
+  .contact { display: inline-block; margin-top: 4px; font-weight: 600; }
+  footer { margin-top: 40px; color: var(--text-2); font-size: 14px; }
+  .btn { display: inline-block; margin: 6px 0 4px; padding: 12px 20px; border-radius: 12px; background: var(--accent); color: #1a0f08; font-weight: 700; text-decoration: none; }
+  ol { padding-left: 22px; } ol li { margin: 6px 0; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img class="logo" src="/img/logo.png" alt="" aria-hidden="true">
+    <a href="/">JapSadhna</a>
+  </header>
+
+  <h1>Delete your account</h1>
+  <p class="meta">JapSadhna (जपसाधना) · developer: Jitesh Patil · patil.jitesh866@gmail.com</p>
+
+  <p>You can use JapSadhna without an account. If you created one (with Google or email), you can delete it and all the data stored with it at any time.</p>
+
+  <h2>Delete in the app</h2>
+  <ol>
+    <li>Open JapSadhna and tap your profile picture at the top right.</li>
+    <li>Tap <strong>Delete my account</strong> and confirm.</li>
+    <li>Your saved mantras, counts and settings are deleted from our servers straight away and you are signed out.</li>
+    <li>An email to us opens — send it, and we remove your login (email and name) as well.</li>
+  </ol>
+
+  <h2>Request deletion without the app</h2>
+  <p>Send us an email from the address you signed in with. We will delete your account and confirm by email.</p>
+  <a class="btn" href="mailto:patil.jitesh866@gmail.com?subject=Delete%20my%20JapSadhna%20account&amp;body=Please%20delete%20my%20JapSadhna%20account%20and%20all%20its%20data.%20The%20email%20I%20signed%20in%20with%20is%3A%20">Email a deletion request</a>
+
+  <h2>What is deleted</h2>
+  <ul>
+    <li>Your login: email address, name and profile picture from Google sign-in.</li>
+    <li>Your mantras and prayers, counts, rounds, day plans and settings, including a wallpaper photo you uploaded.</li>
+  </ul>
+  <p>Nothing is kept after deletion. Deletion is completed within 30 days of your request (usually much sooner). Data that is only on your phone is removed when you uninstall the app.</p>
+
+  <p>More about how we handle information: <a href="/privacy">Privacy Policy</a></p>
+
+  <footer>© 2026 JapSadhna</footer>
+</main>
+</body>
+</html>

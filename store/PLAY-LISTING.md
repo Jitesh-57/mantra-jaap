@@ -55,7 +55,7 @@ Made with devotion for daily sadhana. 🙏
 | Financial features | None |
 | Health | None |
 | Data safety | see below |
-| Account deletion URL | https://mantra-jaap-delta.vercel.app/privacy#delete (in the app: tap your picture → *Delete my account*) |
+| Account deletion URL | https://mantra-jaap-delta.vercel.app/delete-account (in the app: tap your picture → *Delete my account*) |
 
 ## Data safety
 
