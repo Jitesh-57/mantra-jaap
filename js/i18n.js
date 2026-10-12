@@ -210,6 +210,7 @@ export const STRINGS = {
     deleteAccount: 'Delete my account',
     deleteAccConfirm: 'Delete your account? Your saved mantras, counts and settings will be deleted from the cloud now, and you will be signed out. An email to us will open so we can remove your login too.',
     deleteAccDone: 'Your saved data is deleted. Send the email to finish removing your login.',
+    adPrivacy: 'Ad privacy choices',
   },
 
   hi: {
@@ -421,6 +422,7 @@ export const STRINGS = {
     deleteAccount: 'मेरा खाता हटाएँ',
     deleteAccConfirm: 'खाता हटाएँ? आपके सहेजे गए मंत्र, गिनती और सेटिंग्स अभी क्लाउड से हट जाएँगे और आप साइन आउट हो जाएँगे। आपका लॉगिन हटाने के लिए हमें एक ईमेल खुलेगा।',
     deleteAccDone: 'आपका सहेजा डेटा हटा दिया गया। लॉगिन हटाने के लिए ईमेल भेजें।',
+    adPrivacy: 'विज्ञापन गोपनीयता विकल्प',
   },
 
   mr: {
@@ -632,5 +634,6 @@ export const STRINGS = {
     deleteAccount: 'माझे खाते हटवा',
     deleteAccConfirm: 'खाते हटवायचे? तुमचे जतन केलेले मंत्र, मोजणी आणि सेटिंग्ज आत्ताच क्लाउडमधून हटवले जातील आणि तुम्ही साइन आउट व्हाल. तुमचे लॉगिन हटवण्यासाठी आम्हाला एक ईमेल उघडेल.',
     deleteAccDone: 'तुमचा जतन केलेला डेटा हटवला. लॉगिन हटवण्यासाठी ईमेल पाठवा.',
+    adPrivacy: 'जाहिरात गोपनीयता पर्याय',
   },
 };

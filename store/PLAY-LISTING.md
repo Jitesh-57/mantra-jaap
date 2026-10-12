@@ -46,7 +46,8 @@ Made with devotion for daily sadhana. 🙏
 | Form | Answer |
 | --- | --- |
 | Privacy policy | https://mantra-jaap-delta.vercel.app/privacy |
-| Ads | **No** — the app does not show ads yet. Change to Yes only when AdMob is added. |
+| Ads | **Yes** — a Google AdMob banner on the home screen of the Android app |
+| Advertising ID | **Yes** — used by the AdMob SDK for **Advertising or marketing** (and fraud prevention) |
 | App access | **All or some functionality is restricted** → add instructions: "Sign-in is optional. All counting, reading and library features work without an account. Signing in only syncs your mantras and settings." Provide a test email + password created in the app. |
 | Target audience | 13–15, 16–17, 18 and over (not for children under 13) |
 | Content rating | Category: *Reference, News, or Educational* (or Utility). Answer **No** to every question about violence, sexual content, language, drugs, gambling. Users can't interact or share content with each other. |
@@ -59,7 +60,7 @@ Made with devotion for daily sadhana. 🙏
 
 ## Data safety
 
-- Does the app collect or share user data? **Yes** (only when the user signs in)
+- Does the app collect or share user data? **Yes**
 - Encrypted in transit? **Yes**
 - Can users request deletion? **Yes**
 
@@ -71,7 +72,23 @@ Data **collected** (not shared), all **optional**, purpose **App functionality**
 | Personal info → Name | Shown in the account (from Google sign-in) |
 | App activity → Other user-generated content | The user's mantras, prayers, counts and settings, synced to their account |
 
-Not collected: location, contacts, photos (scanned pages are read on the phone and not uploaded), audio (speech is recognised by Android's speech service and not stored or sent to us), device IDs, analytics, crash data.
+Collected **and shared** by the Google AdMob SDK (required, not optional), purposes **Advertising or marketing**, **Analytics**, **Fraud prevention, security, and compliance**:
+
+| Data type | Why |
+| --- | --- |
+| Location → Approximate location | AdMob derives it from the IP address |
+| Device or other IDs | Advertising ID |
+| App activity → App interactions | Ad views and taps |
+| App info and performance → Diagnostics | Ad SDK performance |
+
+Not collected: precise location, contacts, photos (scanned pages are read on the phone and not uploaded), audio (speech is recognised by Android's speech service and not stored or sent to us).
+
+## AdMob
+
+- Publisher ID: `pub-6299138657923728`; `app-ads.txt` is served at https://mantra-jaap-delta.vercel.app/app-ads.txt
+  (Play Console → Store settings → **Website** must be `https://mantra-jaap-delta.vercel.app` for AdMob to verify it).
+- App ID → `android/app/src/main/res/values/strings.xml` (`admob_app_id`); banner ad unit ID → `js/config.js` (`ADMOB_BANNER_ID`).
+- In AdMob → Privacy & messaging, create a **GDPR (European regulations) message** so the consent form appears in the EEA/UK.
 
 ## Closed test (personal developer account)
 

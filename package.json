@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "JapSadhna (जपसाधना): mantra jaap counter and prayer reader \u2014 web app and Android app (Capacitor).",
+  "description": "JapSadhna (जपसाधना): mantra jaap counter and prayer reader — web app and Android app (Capacitor).",
   "scripts": {
     "web:copy": "node scripts/copy-web.mjs",
     "android:sync": "npm run web:copy && npx cap sync android",
     "android:open": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor-community/admob": "8.1.0",
     "@capacitor-community/keep-awake": "8.0.1",
     "@capacitor-community/speech-recognition": "7.0.1",
     "@capacitor/android": "8.5.3",

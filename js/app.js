@@ -2,9 +2,9 @@ import { STRINGS } from './i18n.js';
 import { createTracker, wordKey, similarity } from './align.js';
 import { LIBRARY } from './library.js';
 import { googleSearchUrl } from './online.js';
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, ADMOB_BANNER_ID } from './config.js';
 import { connect } from './cloud.js';
-import { NATIVE, WEB_URL, AUTH_CALLBACK, startNativeSpeech, nativeShare, onBackButton, exitApp, onAppLink, openExternal, closeExternal, nativeKeepAwake } from './native.js';
+import { NATIVE, WEB_URL, AUTH_CALLBACK, startNativeSpeech, nativeShare, onBackButton, exitApp, onAppLink, openExternal, closeExternal, nativeKeepAwake, initAds, setAdVisible, adPrivacyNeeded, showAdPrivacy } from './native.js';
 
 // ============ constants ============
 const KEY = 'mantra-jaap-v3';
@@ -221,6 +221,16 @@ function applyTheme() {
   document.body.classList.toggle('has-wp', !!(wp && wp.css));
 }
 
+// ============ ads (Android app only) ============
+// One banner at the bottom of the home screen; never while chanting or while a panel is open.
+let adHeight = 0;
+function syncAds() {
+  if (!NATIVE) return;
+  const on = !$('home').hidden && !openSheets.length;
+  setAdVisible(on);
+  document.documentElement.style.setProperty('--ad-h', (on ? adHeight : 0) + 'px');
+}
+
 // ============ sheets ============
 const openSheets = [];
 let lastFocus = null;
@@ -232,6 +242,7 @@ function openSheet(id) {
   openSheets.push(el);
   document.body.classList.add('locked');
   el.querySelector('.sheet-panel').scrollTop = 0;
+  syncAds();
 }
 function closeSheet(el) {
   if (typeof el === 'string') el = $(el);
@@ -241,6 +252,7 @@ function closeSheet(el) {
   if (el.id === 'setSheet' && settingsDirty()) toast(t('notSaved'));
   if (!openSheets.length) document.body.classList.remove('locked');
   lastFocus?.focus?.({ preventScroll: true });
+  syncAds();
 }
 document.addEventListener('click', (e) => {
   const c = e.target.closest('[data-close]');
@@ -737,6 +749,7 @@ function startPractice(item, mode) {
   $('home').hidden = true;
   $('practice').hidden = false;
   $('practice').classList.toggle('long', isLong(item.text));
+  syncAds();
   window.scrollTo(0, 0);
   buildReader();
   buildRing();
@@ -749,6 +762,7 @@ function leavePractice() {
   stopAll();
   $('practice').hidden = true;
   $('home').hidden = false;
+  syncAds();
   renderHome();
   window.scrollTo(0, 0);
 }
@@ -1659,6 +1673,10 @@ if (NATIVE) {
 applyTheme();
 applyI18n();
 initAccounts();
+if (NATIVE) {
+  initAds(ADMOB_BANNER_ID, (h) => { adHeight = h; syncAds(); }).then(() => { $('adPrivacyBtn').hidden = !adPrivacyNeeded(); syncAds(); });
+  $('adPrivacyBtn').onclick = showAdPrivacy;
+}
 
 // a shared link (?m=text&n=count&t=title) adds that mantra and opens it
 const params = new URLSearchParams(location.search);

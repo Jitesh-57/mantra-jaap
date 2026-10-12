@@ -18,6 +18,7 @@ const AppPlugin = plugin('App');
 const Browser = plugin('Browser');
 const SharePlugin = plugin('Share');
 const KeepAwake = plugin('KeepAwake');
+const AdMob = plugin('AdMob');
 
 export const nativeShare = (data) => SharePlugin.share({ ...data, dialogTitle: data.title });
 export const onBackButton = (fn) => AppPlugin?.addListener('backButton', fn);
@@ -26,6 +27,46 @@ export const onAppLink = (fn) => AppPlugin?.addListener('appUrlOpen', ({ url }) 
 export const openExternal = (url) => Browser.open({ url });
 export const closeExternal = () => Browser.close().catch(() => {});
 export const nativeKeepAwake = (on) => (on ? KeepAwake.keepAwake() : KeepAwake.allowSleep()).catch(() => {});
+
+// ----- ads: one banner at the bottom of the home screen -----
+let adId = '', adReady = false, adMade = false, adShown = false, adWanted = false, adPrivacy = false;
+let adQueue = Promise.resolve();
+const isTestAd = (id) => id.startsWith('ca-app-pub-3940256099942544/');
+
+/** Asks for consent where the law requires it (EEA/UK), then allows the banner. */
+export async function initAds(bannerId, onHeight) {
+  if (!AdMob || !bannerId) return;
+  adId = bannerId;
+  try {
+    await AdMob.initialize({ initializeForTesting: isTestAd(adId) });
+    let info = await AdMob.requestConsentInfo();
+    if (info.status === 'REQUIRED' && info.isConsentFormAvailable) info = await AdMob.showConsentForm();
+    adPrivacy = info.privacyOptionsRequirementStatus === 'REQUIRED';
+    if (!info.canRequestAds) return;
+    AdMob.addListener('bannerAdSizeChanged', (s) => onHeight(s.height || 0));
+    AdMob.addListener('bannerAdFailedToLoad', () => onHeight(0));
+    adReady = true;
+    setAdVisible(adWanted);
+  } catch (e) { console.error('ads', e); }
+}
+/** Show or hide the banner (hidden while chanting and while a panel is open). */
+export function setAdVisible(on) {
+  adWanted = on;
+  if (!adReady) return;
+  adQueue = adQueue.then(async () => {
+    if (adWanted && !adShown) {
+      if (!adMade) await AdMob.showBanner({ adId, adSize: 'ADAPTIVE_BANNER', position: 'BOTTOM_CENTER', margin: 0, isTesting: isTestAd(adId) });
+      else await AdMob.resumeBanner();
+      adMade = adShown = true;
+    } else if (!adWanted && adShown) {
+      await AdMob.hideBanner();
+      adShown = false;
+    }
+  }).catch((e) => console.error('ads', e));
+}
+/** Users in regions with privacy laws must be able to change their ad choices. */
+export const adPrivacyNeeded = () => adPrivacy;
+export const showAdPrivacy = () => AdMob?.showPrivacyOptionsForm().catch((e) => console.error('ads', e));
 
 /**
  * Android speech recognition with live partial results.

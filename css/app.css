@@ -167,14 +167,14 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 .tile:active { transform: scale(.97); }
 
 .fab {
-  position: fixed; z-index: 30; right: max(16px, var(--safe-area-inset-right, env(safe-area-inset-right))); bottom: max(18px, var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
+  position: fixed; z-index: 30; right: max(16px, var(--safe-area-inset-right, env(safe-area-inset-right))); bottom: calc(max(18px, var(--safe-area-inset-bottom, env(safe-area-inset-bottom))) + var(--ad-h, 0px));
   display: grid; place-items: center; width: 56px; height: 56px; border-radius: 18px;
   background: var(--surface-2); color: var(--text); border: 1px solid var(--line); box-shadow: var(--shadow);
   transition: transform .2s var(--ease), background-color .15s;
 }
 .fab .i { width: 24px; height: 24px; transition: transform .5s var(--ease); }
 .fab:active { transform: scale(.94); }
-.home-pad { height: 96px; }
+.home-pad { height: calc(96px + var(--ad-h, 0px)); }
 
 /* ============ practice ============ */
 .practice { display: flex; flex-direction: column; min-height: 100dvh; padding-bottom: calc(var(--bar-h) + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)) + 12px); }
@@ -500,7 +500,8 @@ body.has-wp .bead:not(.done):not(.meru) { fill: color-mix(in srgb, var(--text) 5
 
 .policy-link { align-self: center; font-size: 14px; color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; padding: 6px; }
 .policy-link:hover { color: var(--text); }
-.policy-link.btn-danger { color: var(--danger); background: none; border: 0; font: inherit; font-size: 14px; cursor: pointer; }
+button.policy-link { background: none; border: 0; font: inherit; font-size: 14px; cursor: pointer; }
+.policy-link.btn-danger { color: var(--danger); }
 
 /* ============ toast ============ */
 .toast {
