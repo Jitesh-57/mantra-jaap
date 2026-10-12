@@ -4,6 +4,6 @@
     <string name="title_activity_main">JapSadhna</string>
     <string name="package_name">myapp.japsadhna</string>
     <string name="custom_url_scheme">com.sjpt.mantrajaap</string>
-    <!-- Google test app ID: replace with the AdMob app ID (AdMob → Apps → App settings) -->
-    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+    <!-- AdMob app ID (AdMob → Apps → JapSadhna → App settings) -->
+    <string name="admob_app_id">ca-app-pub-6299138657923728~8441678861</string>
 </resources>

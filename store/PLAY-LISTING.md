@@ -87,7 +87,7 @@ Not collected: precise location, contacts, photos (scanned pages are read on the
 
 - Publisher ID: `pub-6299138657923728`; `app-ads.txt` is served at https://mantra-jaap-delta.vercel.app/app-ads.txt
   (Play Console → Store settings → **Website** must be `https://mantra-jaap-delta.vercel.app` for AdMob to verify it).
-- App ID → `android/app/src/main/res/values/strings.xml` (`admob_app_id`); banner ad unit ID → `js/config.js` (`ADMOB_BANNER_ID`).
+- App ID `ca-app-pub-6299138657923728~8441678861` → `android/app/src/main/res/values/strings.xml` (`admob_app_id`); banner ad unit `ca-app-pub-6299138657923728/4199181521` → `js/config.js` (`ADMOB_BANNER_ID`).
 - In AdMob → Privacy & messaging, create a **GDPR (European regulations) message** so the consent form appears in the EEA/UK.
 
 ## Closed test (personal developer account)
