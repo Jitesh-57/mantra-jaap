@@ -300,7 +300,7 @@ function closeSheet(el) {
   if (!el || el.hidden) return;
   el.hidden = true;
   openSheets.splice(openSheets.indexOf(el), 1);
-  if (el.id === 'setSheet' && settingsDirty()) toast(t('notSaved'));
+  if (el.id === 'setSheet') { document.body.classList.remove('peek'); if (settingsDirty()) toast(t('notSaved')); }
   if (!openSheets.length) document.body.classList.remove('locked');
   lastFocus?.focus?.({ preventScroll: true });
   syncAds();
@@ -1644,7 +1644,16 @@ function peek(on, row) {
 $$('.peekable input[type=range]').forEach((inp) => {
   inp.addEventListener('pointerdown', () => peek(true, inp.closest('.peekable')));
 });
-for (const ev of ['pointerup', 'pointercancel', 'blur']) window.addEventListener(ev, () => { if (document.body.classList.contains('peek')) peek(false); });
+for (const ev of ['pointerup', 'pointercancel', 'blur']) window.addEventListener(ev, () => { if (!colorPeek && document.body.classList.contains('peek')) peek(false); });
+// the colour picker is a pop-up: Settings steps aside while it is open, so new colours show on the real screen
+let colorPeek = false;
+const endColorPeek = () => { if (colorPeek) { colorPeek = false; peek(false); } };
+$$('.colors input[type=color]').forEach((inp) => {
+  inp.addEventListener('click', () => { colorPeek = true; peek(true, $('colorsRow')); });
+  inp.addEventListener('change', endColorPeek);
+});
+document.addEventListener('pointerdown', (e) => { if (colorPeek && !e.target.closest('.colors')) endColorPeek(); }, true);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') endColorPeek(); });
 $('cardA').addEventListener('input', (e) => { S.cardT = +e.target.value; $('cardLabel').textContent = t('cardT', { n: Math.round(S.cardT * 100) }); saveSettings(); applyTheme(); });
 $('cardBlur').addEventListener('input', (e) => { S.cardBlur = +e.target.value; $('blurLabel').textContent = t('cardBlurL', { n: S.cardBlur }); saveSettings(); applyTheme(); });
 $('setSave').onclick = async () => {

@@ -661,6 +661,6 @@ body.peek #setSheet { background: transparent; animation: none; }
 body.peek #setSheet .sheet-panel { visibility: hidden; background: transparent; border-color: transparent; box-shadow: none; }
 body.peek #setSheet .peeking {
   visibility: visible; position: relative; z-index: 2; padding: 12px 14px; border-radius: 16px;
-  background: color-mix(in srgb, var(--surface) 92%, transparent); box-shadow: 0 8px 30px rgb(0 0 0 / .35);
+  background: var(--surface); box-shadow: 0 8px 30px rgb(0 0 0 / .35);
 }
 #setSheet .sheet-panel, #setSheet { transition: background-color .2s; }
