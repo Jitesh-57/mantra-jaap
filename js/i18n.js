@@ -241,6 +241,7 @@ export const STRINGS = {
     wallsError: 'Couldn\'t load wallpapers. Check your internet and try again.',
     cardT: 'Card transparency · {n}%',
     cardBlurL: 'Card blur (frosted glass) · {n}',
+    panelColor: 'Panels',
   },
 
   hi: {
@@ -483,6 +484,7 @@ export const STRINGS = {
     wallsError: 'वॉलपेपर लोड नहीं हो सके। इंटरनेट जाँचकर फिर कोशिश करें।',
     cardT: 'कार्ड पारदर्शिता · {n}%',
     cardBlurL: 'कार्ड धुंधलापन (फ्रॉस्टेड ग्लास) · {n}',
+    panelColor: 'पैनल',
   },
 
   mr: {
@@ -725,5 +727,6 @@ export const STRINGS = {
     wallsError: 'वॉलपेपर लोड होऊ शकले नाहीत. इंटरनेट तपासून पुन्हा प्रयत्न करा.',
     cardT: 'कार्ड पारदर्शकता · {n}%',
     cardBlurL: 'कार्ड धूसरता (फ्रॉस्टेड ग्लास) · {n}',
+    panelColor: 'पॅनेल',
   },
 };

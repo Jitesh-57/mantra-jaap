@@ -243,20 +243,30 @@ function applyTheme() {
   const bg = S.bg || th.bg;
   const light = luminance(bg) > 0.4;
   set('--bg', bg);
-  set('--surface', th.surface); set('--surface-2', th.surface2); set('--line', th.line);
-  set('--text', th.text); set('--text-2', th.text2);
+  // panel colour: cards and panels; their text flips light/dark when the panel needs it
+  const panel = S.panel || th.surface;
+  const panelLight = luminance(panel) > 0.4;
+  const edge = panelLight ? '#000' : '#fff';
+  set('--surface', panel);
+  set('--surface-2', S.panel ? `color-mix(in srgb, ${panel} 90%, ${edge})` : th.surface2);
+  set('--line', S.panel ? `color-mix(in srgb, ${panel} 82%, ${edge})` : th.line);
+  const flip = S.panel && panelLight !== !!th.light;
+  const pText = flip ? (panelLight ? '#2b1d10' : '#f7ebdc') : th.text;
+  set('--text', pText); set('--text-2', flip ? (panelLight ? '#7d6650' : '#c7ae92') : th.text2);
   set('--accent', th.accent); set('--accent-ink', th.accentInk); set('--gold', th.gold);
-  set('--read', S.text || th.text);
+  set('--read', S.text || pText);
   // text that sits straight on the background (titles, header, hints) follows the chosen text colour too
   set('--on-bg', S.text ? `color-mix(in srgb, ${S.text} 85%, transparent)` : th.text2);
   set('--on-bg-strong', S.text || th.text);
+  // titles inside the home panels: the chosen text colour, else the panel's own soft text
+  set('--sec-title', S.text ? S.text : flip ? (panelLight ? '#7d6650' : '#c7ae92') : th.text2);
   const hl = S.hl || th.gold;
   set('--hl', hl); set('--hl-ink', luminance(hl) > 0.3 ? '#1a0f08' : '#ffffff');
   set('--ts', S.ts + 'px');
   // over a wallpaper: how see-through and how frosted the panels are
   set('--card-a', Math.round((1 - (S.cardT ?? 0.4)) * 100) + '%');
   set('--card-blur', (S.cardBlur ?? 14) + 'px');
-  root.toggleAttribute('data-light', !!th.light);
+  root.toggleAttribute('data-light', S.panel ? panelLight : !!th.light); // panels decide light or dark controls
   root.dataset.font = S.font;
   document.querySelector('meta[name=theme-color]').content = bg;
 
@@ -1574,6 +1584,7 @@ function renderSettings() {
   vl.value = S.voiceLang;
   const th = THEMES[S.theme];
   $('cBg').value = S.bg || th.bg;
+  $('cPanel').value = S.panel || th.surface;
   $('cText').value = S.text || th.text;
   $('cHl').value = S.hl || th.gold;
   $('ts').value = S.ts;
@@ -1598,7 +1609,7 @@ function renderSettings() {
     b.style.background = `linear-gradient(135deg, ${x.bg} 0 50%, ${x.accent} 50% 75%, ${x.gold} 75%)`;
     const s = document.createElement('span'); s.textContent = t(x.name);
     b.append(s);
-    b.onclick = () => { S.theme = k; S.bg = ''; S.text = ''; S.hl = ''; saveSettings(); applyTheme(); renderSettings(); };
+    b.onclick = () => { S.theme = k; S.bg = ''; S.panel = ''; S.text = ''; S.hl = ''; saveSettings(); applyTheme(); renderSettings(); };
     ts.append(b);
   }
   const ws = $('wpSw');
@@ -1633,10 +1644,10 @@ $('voiceLang').onchange = (e) => {
   saveSettings();
   if (recWanted) { stopRecognition(); startRecognition(); }
 };
-for (const [id, k] of [['cBg', 'bg'], ['cText', 'text'], ['cHl', 'hl']]) {
+for (const [id, k] of [['cBg', 'bg'], ['cPanel', 'panel'], ['cText', 'text'], ['cHl', 'hl']]) {
   $(id).addEventListener('input', (e) => { S[k] = e.target.value; saveSettings(); applyTheme(); });
 }
-$('colorsReset').onclick = () => { S.bg = ''; S.text = ''; S.hl = ''; saveSettings(); applyTheme(); renderSettings(); };
+$('colorsReset').onclick = () => { S.bg = ''; S.panel = ''; S.text = ''; S.hl = ''; saveSettings(); applyTheme(); renderSettings(); };
 $('ts').addEventListener('input', (e) => { S.ts = +e.target.value; $('tsLabel').textContent = t('textSize', { n: S.ts }); saveSettings(); applyTheme(); });
 $('dim').addEventListener('input', (e) => { S.dim = +e.target.value; $('dimLabel').textContent = t('dim', { n: Math.round(S.dim * 100) }); saveSettings(); applyTheme(); });
 // while a wallpaper slider is dragged, Settings steps aside so the change shows on the real screen
