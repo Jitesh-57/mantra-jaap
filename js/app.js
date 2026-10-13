@@ -1426,10 +1426,10 @@ function undo() {
 }
 
 // ----- ring: a rudraksha mala -----
-// Up to 54 beads (a half mala) so each bead is big enough to look like one; for 108 each bead is two jaap.
+// One bead per recitation (a full mala has 108); counts above 108 share beads.
 // Counting starts beside the guru (meru) bead at the bottom and goes round.
 let beads = [];
-const MALA_R = 86;
+const MALA_R = 88;
 function buildRing() {
   const g = $('beads');
   g.textContent = '';
@@ -1437,9 +1437,9 @@ function buildRing() {
   const target = P.item.target;
   $('ring').classList.toggle('arcmode', target < 8);
   if (target < 8) return;
-  const n = Math.min(target, 54);
+  const n = Math.min(target, 108);
   const step = (2 * Math.PI * MALA_R) / (n + 1.6); // room for the guru bead
-  const r = Math.min(7, step * 0.46);
+  const r = Math.min(7, step * 0.49);
   const gap = (step * 1.6) / MALA_R;
   const NS = 'http://www.w3.org/2000/svg';
   const el = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
