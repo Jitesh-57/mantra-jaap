@@ -57,6 +57,8 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- scanning a prayer from a photo -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- vibration on each count (no prompt; a normal permission) -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
 </manifest>
