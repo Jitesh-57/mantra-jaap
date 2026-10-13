@@ -105,7 +105,7 @@ const st = loadState();
 if (st.day !== todayKey()) { st.day = todayKey(); st.todayCount = 0; }
 const save = () => { store(KEY, st); queueCloudSave(); };
 
-const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'bhakti', bg: '', text: '', hl: '', wallpaper: 'none', dim: 0.2, ts: 26, font: 'classic', sound: true, vibe: true, cardT: 0.4, cardBlur: 14 };
+const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'bhakti', bg: '', text: '', hl: '', wallpaper: 'none', dim: 0.2, ts: 22, font: 'classic', sound: true, vibe: true, cardT: 0.4, cardBlur: 14 };
 // Settings are kept only for signed-in people; guests start from the defaults each visit.
 const keepSettings = () => !AUTH_ON || !!read(SIGNED_KEY);
 const S = { ...DEFAULT_SETTINGS, ...(keepSettings() ? read(SET_KEY) || {} : {}) };
