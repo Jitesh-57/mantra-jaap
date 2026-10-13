@@ -69,6 +69,20 @@
     <button class="btn btn-primary btn-lg btn-block" id="heroBtn"><span data-t="continue"></span></button>
   </section>
 
+  <section class="section naam-sec">
+    <h2 class="section-title" data-t="naamJap"></h2>
+    <div class="naam-row" id="naamRow"></div>
+  </section>
+
+  <section class="sadhana" id="sadhana" role="button" tabindex="0">
+    <div class="sad-top">
+      <div class="sad-streak"><span class="flame" aria-hidden="true">🔥</span><b id="sadStreak">0</b><small id="sadStreakLbl"></small></div>
+      <div class="sad-today"><b id="sadToday">0</b><small data-t="jaapToday"></small></div>
+    </div>
+    <div class="week" id="sadWeek"></div>
+    <p class="sad-hint" id="sadHint" data-t="sadHint"></p>
+  </section>
+
   <section class="section lib" id="lib">
     <button class="lib-head" id="libHead" aria-expanded="true" aria-controls="libBody">
       <h2 class="section-title" data-t="library"></h2>
@@ -126,6 +140,7 @@
     <div class="read-bar"><i id="readBar"></i></div>
   </section>
 
+  <div class="floaters" id="floaters" aria-hidden="true"></div>
   <article class="reader" id="reader" lang="sa"><span class="hl-pill" id="hlPill" aria-hidden="true"></span></article>
   <div class="live" id="live"><span class="dot"></span><span id="liveText"></span><span class="heard" id="heard"></span></div>
   <div class="meter" id="meter" hidden><i id="meterLevel"></i><u id="meterTh"></u></div>
@@ -133,6 +148,11 @@
   <section class="counter">
     <div class="ring" id="ring" role="button" tabindex="0">
       <svg viewBox="0 0 200 200">
+        <defs>
+          <radialGradient id="rudraDone" cx="35%" cy="32%" r="75%"><stop offset="0" stop-color="#d98a4a"/><stop offset=".45" stop-color="#8f4316"/><stop offset="1" stop-color="#4a1e07"/></radialGradient>
+          <radialGradient id="rudraTodo" cx="35%" cy="32%" r="75%"><stop offset="0" class="todo-a"/><stop offset="1" class="todo-b"/></radialGradient>
+          <radialGradient id="rudraMeru" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#ffd58a"/><stop offset=".5" stop-color="#e0841f"/><stop offset="1" stop-color="#8a3d06"/></radialGradient>
+        </defs>
         <circle class="track" cx="100" cy="100" r="92"/>
         <circle class="ripple" id="ripple" cx="100" cy="100" r="92"/>
         <circle class="arc" id="arc" cx="100" cy="100" r="92" stroke-dasharray="578" stroke-dashoffset="578"/>
@@ -248,6 +268,20 @@
   </div>
 </div>
 
+<div class="sheet" id="statsSheet" hidden>
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+    <div class="grabber"></div>
+    <div class="sheet-head"><h2 id="statsTitle" data-t="mySadhana"></h2><button class="icon-btn" data-close data-t-label="close"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="stack">
+      <div class="stat-grid" id="statGrid"></div>
+      <h3 class="section-title" style="margin:0" data-t="last30"></h3>
+      <div class="month" id="statMonth"></div>
+      <h3 class="section-title" style="margin:0" data-t="byMantra"></h3>
+      <div class="by-mantra" id="statMantras"></div>
+    </div>
+  </div>
+</div>
+
 <div class="sheet" id="setSheet" hidden>
   <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <div class="grabber"></div>
@@ -264,6 +298,15 @@
         </div>
       </div>
       <label class="field"><span data-t="voiceLang"></span><select class="select" id="voiceLang"></select><small data-t="voiceLangHint"></small></label>
+
+      <div class="divider"></div>
+      <h3 class="section-title" style="margin:0" data-t="soundVibe"></h3>
+      <div class="field"><span data-t="beadSound"></span>
+        <div class="segmented" id="soundSeg"><button data-v="on" data-t="on"></button><button data-v="off" data-t="off"></button></div>
+      </div>
+      <div class="field"><span data-t="vibration"></span>
+        <div class="segmented" id="vibeSeg"><button data-v="on" data-t="on"></button><button data-v="off" data-t="off"></button></div>
+      </div>
 
       <div class="divider"></div>
       <h3 class="section-title" style="margin:0" data-t="appearance"></h3>

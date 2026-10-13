@@ -39,6 +39,7 @@ const LANGS = {
 };
 
 const THEMES = {
+  bhakti:   { name: 'thBhakti',   bg: '#fff6ea', surface: '#ffffff', surface2: '#fdebd6', line: '#f0d9bd', text: '#3b2312', text2: '#8a6a4f', accent: '#f26b0f', accentInk: '#ffffff', gold: '#ffb02e', light: true },
   saffron:  { name: 'thSaffron',  bg: '#140c07', surface: '#1f150e', surface2: '#2a1d13', line: '#3a2a1c', text: '#f7ebdc', text2: '#b89f84', accent: '#f08a24', accentInk: '#1a0f08', gold: '#f2c14e' },
   temple:   { name: 'thTemple',   bg: '#faf5ec', surface: '#ffffff', surface2: '#f3e9d8', line: '#e6d8c0', text: '#2b1d10', text2: '#7d6650', accent: '#c2410c', accentInk: '#ffffff', gold: '#f5b83d', light: true },
   midnight: { name: 'thMidnight', bg: '#0a0e1a', surface: '#121829', surface2: '#1a2238', line: '#263150', text: '#e6eaf5', text2: '#8f9bbd', accent: '#6d8dff', accentInk: '#ffffff', gold: '#f5c76a' },
@@ -75,7 +76,7 @@ function read(key) { try { return JSON.parse(localStorage.getItem(key)); } catch
 
 // ============ state ============
 function freshState() {
-  return { items: [], currentId: null, libOpen: true, day: todayKey(), todayCount: 0, total: 0, gap: 0.7, sens: 5, minLen: 1.2, wpm: 60, guide: 'voice' };
+  return { items: [], currentId: null, libOpen: true, day: todayKey(), todayCount: 0, total: 0, gap: 0.7, sens: 5, minLen: 1.2, wpm: 60, guide: 'voice', hist: {} };
 }
 function newItem(text, title = '', target) {
   return { id: uid(), title, text, target: target || (isLong(text) ? 1 : 108), count: 0, rounds: 0, updated: Date.now() };
@@ -103,7 +104,7 @@ const st = loadState();
 if (st.day !== todayKey()) { st.day = todayKey(); st.todayCount = 0; }
 const save = () => { store(KEY, st); queueCloudSave(); };
 
-const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'saffron', bg: '', text: '', hl: '', wallpaper: 'none', dim: 0.2, ts: 26, font: 'classic' };
+const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'bhakti', bg: '', text: '', hl: '', wallpaper: 'none', dim: 0.2, ts: 26, font: 'classic', sound: true, vibe: true };
 // Settings are kept only for signed-in people; guests start from the defaults each visit.
 const keepSettings = () => !AUTH_ON || !!read(SIGNED_KEY);
 const S = { ...DEFAULT_SETTINGS, ...(keepSettings() ? read(SET_KEY) || {} : {}) };
@@ -111,7 +112,7 @@ if (S.ink && !S.text) S.text = S.ink;
 delete S.ink;
 if (!STRINGS[S.uiLang]) { const l = (navigator.language || '').slice(0, 2); S.uiLang = STRINGS[l] ? l : 'en'; }
 if (!LANGS[S.voiceLang]) S.voiceLang = 'hi';
-if (!THEMES[S.theme]) S.theme = 'saffron';
+if (!THEMES[S.theme]) S.theme = 'bhakti';
 if (S.dim === 0.5) S.dim = 0.2; // earlier default hid wallpapers too much
 let wpData = null;
 if (keepSettings()) { try { wpData = localStorage.getItem(WP_KEY); } catch (e) {} }
@@ -137,6 +138,9 @@ if (!st.items.some((i) => 'total' in i)) {
   const c = currentItem() || st.items[0];
   if (c) { c.total = st.total || 0; if (st.day === todayKey()) { c.todayN = st.todayCount || 0; c.todayDay = st.day; } }
 }
+// day-by-day history started later: begin it with what was counted today
+st.hist ||= {};
+if (!(todayKey() in st.hist) && todayAll()) st.hist[todayKey()] = todayAll();
 
 // ============ i18n ============
 function t(k, vars) {
@@ -168,18 +172,60 @@ function toast(msg) {
   toastTimer = setTimeout(() => el.classList.add('off'), 2800);
 }
 let actx;
-function tone(freq, dur, vol) {
+const vibrate = (p) => { if (S.vibe === false) return; try { navigator.vibrate?.(p); } catch (e) {} };
+const audio = () => (actx = actx || new (window.AudioContext || window.webkitAudioContext)());
+// the soft knock of one rudraksha bead against the next
+function beadClick() {
+  if (S.sound === false) return;
   try {
-    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-    const o = actx.createOscillator(), g = actx.createGain();
-    o.type = 'sine'; o.frequency.value = freq;
-    g.gain.setValueAtTime(vol, actx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
-    o.connect(g).connect(actx.destination);
-    o.start(); o.stop(actx.currentTime + dur);
+    const a = audio(), now = a.currentTime;
+    const len = Math.floor(a.sampleRate * 0.05), buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3;
+    const src = a.createBufferSource(); src.buffer = buf;
+    const bp = a.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1700; bp.Q.value = 3.5;
+    const g = a.createGain(); g.gain.value = 0.55;
+    src.connect(bp).connect(g).connect(a.destination); src.start(now);
+    const o = a.createOscillator(), og = a.createGain();
+    o.frequency.setValueAtTime(320, now); o.frequency.exponentialRampToValueAtTime(140, now + 0.06);
+    og.gain.setValueAtTime(0.12, now); og.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+    o.connect(og).connect(a.destination); o.start(now); o.stop(now + 0.09);
   } catch (e) {}
 }
-const vibrate = (p) => { try { navigator.vibrate?.(p); } catch (e) {} };
+// a temple bell when a mala is complete
+function bell() {
+  if (S.sound === false) return;
+  try {
+    const a = audio(), now = a.currentTime;
+    [[1, 0.2, 4], [2.76, 0.09, 2.6], [5.4, 0.05, 1.6], [8.93, 0.025, 1]].forEach(([m, v, dur]) => {
+      const o = a.createOscillator(), g = a.createGain();
+      o.frequency.value = 392 * m;
+      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(v, now + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      o.connect(g).connect(a.destination); o.start(now); o.stop(now + dur);
+    });
+  } catch (e) {}
+}
+
+// ============ my sadhana: jaap per day ============
+const dayKey = (d) => d.toLocaleDateString('en-CA');
+const histDay = (k) => st.hist?.[k] || 0;
+function addHist(n) {
+  st.hist ||= {};
+  const k = todayKey();
+  st.hist[k] = Math.max(0, (st.hist[k] || 0) + n);
+}
+function streak() {
+  const d = new Date();
+  if (!histDay(dayKey(d))) d.setDate(d.getDate() - 1); // today not started yet: the streak is still alive
+  let n = 0;
+  while (histDay(dayKey(d)) > 0) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function lastDays(n) {
+  const out = [];
+  const d = new Date(); d.setDate(d.getDate() - (n - 1));
+  for (let i = 0; i < n; i++) { out.push({ key: dayKey(d), date: new Date(d), n: histDay(dayKey(d)) }); d.setDate(d.getDate() + 1); }
+  return out;
+}
 
 // ============ theme ============
 function luminance(hex) {
@@ -312,6 +358,82 @@ function renderHome() {
     list.append(row);
   });
   setLib(st.libOpen !== false);
+  renderSadhana();
+  renderNaam();
+}
+
+// ----- my sadhana card and sheet -----
+const weekday = (d) => d.toLocaleDateString(LOCALE(), { weekday: 'narrow' });
+const LOCALE = () => ({ hi: 'hi-IN', mr: 'mr-IN' })[document.documentElement.lang] || 'en-IN';
+function bars(box, days, labels) {
+  box.textContent = '';
+  const max = Math.max(1, ...days.map((d) => d.n));
+  for (const d of days) {
+    const col = document.createElement('div');
+    col.className = 'day' + (d.key === todayKey() ? ' today' : '') + (d.n ? '' : ' zero');
+    col.title = `${d.date.toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}: ${d.n}`;
+    col.innerHTML = `<i style="--h:${Math.max(d.n ? 8 : 3, Math.round((d.n / max) * 100))}%"></i>` + (labels ? `<small>${labels(d)}</small>` : '');
+    box.append(col);
+  }
+}
+function renderSadhana() {
+  const s = streak();
+  $('sadStreak').textContent = s;
+  $('sadStreakLbl').textContent = t('dayStreak', { n: s });
+  $('sadToday').textContent = histDay(todayKey());
+  const week = lastDays(7);
+  bars($('sadWeek'), week, (d) => weekday(d.date));
+  $('sadhana').classList.toggle('empty', !week.some((d) => d.n));
+}
+function openStats() {
+  const days = lastDays(30);
+  const all = Object.values(st.hist || {});
+  const total = st.items.reduce((n, it) => n + (it.total || 0), 0);
+  const rounds = st.items.reduce((n, it) => n + (it.rounds || 0), 0);
+  const cells = [
+    ['🔥', streak(), t('streakDays')],
+    ['📿', total, t('allTime')],
+    ['🌼', rounds, t('malasDone')],
+    ['🗓️', all.filter((n) => n > 0).length, t('daysPracticed')],
+    ['⭐', Math.max(0, ...all), t('bestDay')],
+    ['☀️', histDay(todayKey()), t('jaapToday')],
+  ];
+  $('statGrid').innerHTML = cells.map(([e, n, l]) => `<div><span aria-hidden="true">${e}</span><b>${n}</b><small>${l}</small></div>`).join('');
+  bars($('statMonth'), days, (d) => (d.date.getDate() % 5 === 1 || d.key === todayKey() ? d.date.getDate() : ''));
+  const box = $('statMantras');
+  box.textContent = '';
+  const top = [...st.items].filter((it) => it.total).sort((a, b) => b.total - a.total).slice(0, 8);
+  const most = top[0]?.total || 1;
+  for (const it of top) {
+    const row = document.createElement('div');
+    row.className = 'bm';
+    row.innerHTML = '<span></span><b></b><i></i>';
+    row.querySelector('span').textContent = it.title || it.text.replace(/\s+/g, ' ');
+    row.querySelector('b').textContent = it.total;
+    row.querySelector('i').style.width = Math.round((it.total / most) * 100) + '%';
+    box.append(row);
+  }
+  if (!top.length) box.innerHTML = `<p class="note">${t('noJaapYet')}</p>`;
+  openSheet('statsSheet');
+}
+$('sadhana').onclick = openStats;
+$('sadhana').onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStats(); } };
+
+// ----- quick naam jap -----
+const NAAM = ['राधे राधे', 'राम', 'सीताराम', 'हरे कृष्ण', 'ॐ नमः शिवाय', 'जय श्री राम', 'राम कृष्ण हरी', 'श्री स्वामी समर्थ', 'ॐ', 'ਵਾਹਿਗੁਰੂ'];
+function renderNaam() {
+  const row = $('naamRow');
+  if (row.childElementCount) return;
+  for (const text of NAAM) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'naam'; b.textContent = text;
+    b.onclick = () => {
+      let it = st.items.find((i) => i.text === text);
+      if (!it) { it = newItem(text, '', 108); st.items.unshift(it); save(); renderHome(); }
+      openStart(it);
+    };
+    row.append(b);
+  }
 }
 function setLib(open) {
   $('lib').classList.toggle('closed', !open);
@@ -956,6 +1078,20 @@ function collectWords(results) {
   }
   return out;
 }
+// words the recogniser hears drift up around the mala
+let lastFloatLen = 0;
+function floatWord(w) {
+  if ($('practice').classList.contains('long') || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const box = $('floaters');
+  if (box.childElementCount > 5) box.firstElementChild.remove();
+  const el = document.createElement('span');
+  el.textContent = w;
+  el.style.left = (12 + Math.random() * 76).toFixed(0) + '%';
+  el.style.fontSize = (16 + Math.random() * 14).toFixed(0) + 'px';
+  el.style.setProperty('--tilt', (Math.random() * 16 - 8).toFixed(0) + 'deg');
+  box.append(el);
+  setTimeout(() => el.remove(), 2600);
+}
 function onHeard(words) {
   heardLen = words.length;
   const autoCount = P.mode === 'auto';
@@ -968,6 +1104,8 @@ function onHeard(words) {
   }
   queueRender();
   $('heard').textContent = words.length ? '“' + words.slice(-5).join(' ') + '”' : '';
+  if (words.length && words.length !== lastFloatLen) floatWord(words[words.length - 1]);
+  lastFloatLen = words.length;
   // only the last word left and the reader pauses: the recogniser may have
   // dropped it (short endings like नमः often are), so finish the recitation
   clearTimeout(endTimer);
@@ -1170,6 +1308,7 @@ function add(opts = {}) {
   const it = P.item;
   if (it.todayDay !== todayKey()) { it.todayDay = todayKey(); it.todayN = 0; }
   it.count++; it.todayN++; it.total = (it.total || 0) + 1; it.updated = Date.now();
+  addHist(1);
   let complete = false;
   if (it.count >= it.target) {
     it.rounds++; it.count = 0; complete = true;
@@ -1178,11 +1317,11 @@ function add(opts = {}) {
   save();
   renderCount(true, complete);
   if (complete) {
-    tone(528, 1.6, 0.22); setTimeout(() => tone(792, 1.8, 0.18), 240);
+    bell();
     vibrate([180, 90, 180, 90, 360]);
     toast(t('roundDone', { r: it.rounds, n: it.target }));
   } else {
-    tone(440, 0.14, 0.045);
+    beadClick();
     vibrate(20);
   }
   // the next recitation starts again from the first word
@@ -1197,14 +1336,17 @@ function undo() {
   if (it.count > 0) it.count--;
   else if (it.rounds > 0) { it.rounds--; it.count = it.target - 1; }
   else return;
-  if (itemToday(it) > 0) it.todayN--;
+  if (itemToday(it) > 0) { it.todayN--; addHist(-1); }
   it.total = Math.max(0, (it.total || 0) - 1);
   save();
   renderCount();
 }
 
-// ----- ring -----
+// ----- ring: a rudraksha mala -----
+// Up to 54 beads (a half mala) so each bead is big enough to look like one; for 108 each bead is two jaap.
+// Counting starts beside the guru (meru) bead at the bottom and goes round.
 let beads = [];
+const MALA_R = 86;
 function buildRing() {
   const g = $('beads');
   g.textContent = '';
@@ -1212,22 +1354,25 @@ function buildRing() {
   const target = P.item.target;
   $('ring').classList.toggle('arcmode', target < 8);
   if (target < 8) return;
-  const n = Math.min(target, 108);
-  const r = n > 60 ? 2.5 : n > 30 ? 3.4 : 4.6;
+  const n = Math.min(target, 54);
+  const step = (2 * Math.PI * MALA_R) / (n + 1.6); // room for the guru bead
+  const r = Math.min(7, step * 0.46);
+  const gap = (step * 1.6) / MALA_R;
   const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+  g.append(el('circle', { cx: 100, cy: 100, r: MALA_R, class: 'thread' }));
   for (let i = 0; i < n; i++) {
-    const a = ((i + 0.5) / n) * Math.PI * 2 - Math.PI / 2; // gap at the top for the meru bead
-    const c = document.createElementNS(NS, 'circle');
-    c.setAttribute('cx', (100 + 92 * Math.cos(a)).toFixed(2));
-    c.setAttribute('cy', (100 + 92 * Math.sin(a)).toFixed(2));
-    c.setAttribute('r', r);
-    c.setAttribute('class', 'bead');
+    const a = Math.PI / 2 + gap / 2 + (i / (n - 1)) * (2 * Math.PI - gap);
+    const c = el('circle', { cx: (100 + MALA_R * Math.cos(a)).toFixed(2), cy: (100 + MALA_R * Math.sin(a)).toFixed(2), r: r.toFixed(2), class: 'bead' });
+    c.style.strokeDasharray = `${(r * 0.32).toFixed(2)} ${(r * 0.38).toFixed(2)}`; // the grooves of a rudraksha
     g.append(c); beads.push(c);
   }
-  const meru = document.createElementNS(NS, 'circle');
-  meru.setAttribute('cx', 100); meru.setAttribute('cy', 8 - r); meru.setAttribute('r', r + 1.6);
-  meru.setAttribute('class', 'bead meru');
-  g.append(meru);
+  // guru bead and tassel
+  const my = 100 + MALA_R + r * 0.4;
+  g.append(el('path', { class: 'tassel', d: `M100 ${my + 9} l-7 26 q7 4 14 0 z` }));
+  for (let k = -2; k <= 2; k++) g.append(el('line', { class: 'tassel-line', x1: 100 + k * 1.2, y1: my + 14, x2: 100 + k * 2.6, y2: my + 34 }));
+  g.append(el('circle', { cx: 100, cy: my + 9, r: 2.6, class: 'knot' }));
+  g.append(el('circle', { cx: 100, cy: my, r: (r * 1.35).toFixed(2), class: 'bead meru' }));
 }
 function renderCount(bump, complete) {
   const it = P.item;
@@ -1332,6 +1477,8 @@ function openSettings() {
 function renderSettings() {
   $$('#uiLangSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === S.uiLang));
   $$('#fontSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === S.font));
+  $$('#soundSeg button').forEach((b) => b.setAttribute('aria-pressed', (b.dataset.v === 'on') === (S.sound !== false)));
+  $$('#vibeSeg button').forEach((b) => b.setAttribute('aria-pressed', (b.dataset.v === 'on') === (S.vibe !== false)));
   const vl = $('voiceLang');
   if (!vl.options.length) for (const k in LANGS) vl.add(new Option(LANGS[k].name, k));
   vl.value = S.voiceLang;
@@ -1384,6 +1531,8 @@ function renderSettings() {
 }
 $$('#uiLangSeg button').forEach((b) => { b.onclick = () => { S.uiLang = b.dataset.v; saveSettings(); applyI18n(); }; });
 $$('#fontSeg button').forEach((b) => { b.onclick = () => { S.font = b.dataset.v; saveSettings(); applyTheme(); renderSettings(); }; });
+$$('#soundSeg button').forEach((b) => { b.onclick = () => { S.sound = b.dataset.v === 'on'; saveSettings(); renderSettings(); if (S.sound) beadClick(); }; });
+$$('#vibeSeg button').forEach((b) => { b.onclick = () => { S.vibe = b.dataset.v === 'on'; saveSettings(); renderSettings(); vibrate(30); }; });
 $('voiceLang').onchange = (e) => {
   S.voiceLang = e.target.value;
   saveSettings();
@@ -1459,6 +1608,8 @@ function mergeState(remote) {
   }
   st.items = [...byText.values()];
   st.total = Math.max(st.total || 0, remote.total || 0);
+  st.hist ||= {};
+  for (const [k, v] of Object.entries(remote.hist || {})) st.hist[k] = Math.max(st.hist[k] || 0, v);
   if (remote.day === st.day) st.todayCount = Math.max(st.todayCount || 0, remote.todayCount || 0);
   for (const k of ['gap', 'sens', 'minLen', 'wpm', 'guide', 'libOpen']) if (remote[k] != null) st[k] = remote[k];
   if (remote.currentId && itemById(remote.currentId)) st.currentId = remote.currentId;
