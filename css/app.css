@@ -428,9 +428,10 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 
 /* ============ wallpaper: let it show through the panels ============ */
 body.has-wp .hero, body.has-wp .list, body.has-wp .tile, body.has-wp .reader, body.has-wp .stats,
-body.has-wp .strip, body.has-wp .segmented, body.has-wp .fab, body.has-wp .icon-btn.boxed {
-  background-color: color-mix(in srgb, var(--surface) 58%, transparent);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+body.has-wp .strip, body.has-wp .segmented, body.has-wp .fab, body.has-wp .icon-btn.boxed,
+body.has-wp .sadhana, body.has-wp .naam, body.has-wp .find, body.has-wp .empty {
+  background: color-mix(in srgb, var(--surface) var(--card-a, 60%), transparent);
+  -webkit-backdrop-filter: blur(var(--card-blur, 14px)) saturate(1.2); backdrop-filter: blur(var(--card-blur, 14px)) saturate(1.2);
 }
 body.has-wp .appbar, body.has-wp .action-bar { background-color: color-mix(in srgb, var(--bg) 35%, transparent); }
 body.has-wp .appbar { box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--bg) 35%, transparent); }
@@ -633,3 +634,24 @@ button.policy-link { background: none; border: 0; font: inherit; font-size: 14px
   padding: 16px 16px calc(18px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); background: linear-gradient(transparent, rgb(0 0 0 / .65));
 }
 .wall-actions .icon-btn { color: #fff; background: rgb(255 255 255 / .15); border-color: rgb(255 255 255 / .25); }
+
+/* ============ tap feedback: everything you can press shows it ============ */
+:where(.btn, .tile, .item-main, .naam, .chip, .find, .sadhana, .wall-tile, .wall-mini, .wall-card, .lib-row, .icon-btn, .option, .swatch, .fab, .segmented button, .account-btn, .lib-head, .story-card) {
+  overflow: hidden; -webkit-tap-highlight-color: transparent;
+  transition: transform .18s var(--ease), box-shadow .2s, background-color .2s, filter .2s;
+}
+:where(.btn, .tile, .item-main, .naam, .chip, .find, .sadhana, .wall-tile, .wall-mini, .wall-card, .lib-row, .option, .swatch, .account-btn):active { transform: scale(.965); filter: brightness(.97); }
+:where(.icon-btn, .segmented button):active { transform: scale(.9); }
+.tap-rip {
+  position: absolute; border-radius: 50%; pointer-events: none; background: var(--accent); opacity: .22;
+  transform: scale(0); animation: tapRip .55s cubic-bezier(.2, .7, .3, 1) forwards;
+}
+@keyframes tapRip { to { transform: scale(1); opacity: 0; } }
+@media (hover: hover) {
+  :where(.tile, .item-main, .naam, .find, .sadhana, .wall-card, .lib-row, .option):hover { box-shadow: 0 6px 18px rgb(0 0 0 / .12); transform: translateY(-1px); }
+}
+@media (prefers-reduced-motion: reduce) { .tap-rip { display: none; } }
+.btn-primary .tap-rip, .naam .tap-rip { background: #fff; opacity: .35; }
+.naam .tap-rip { background: var(--accent); opacity: .25; }
+/* pressing wins over the hover lift */
+.tile:active, .item-main:active, .naam:active, .find:active, .sadhana:active, .wall-card:active, .lib-row:active, .option:active, .btn:active { transform: scale(.965); box-shadow: none; }

@@ -239,6 +239,8 @@ export const STRINGS = {
     loadingWalls: 'Loading wallpapers…',
     noWalls: 'No wallpapers yet.',
     wallsError: 'Couldn\'t load wallpapers. Check your internet and try again.',
+    cardT: 'Card transparency · {n}%',
+    cardBlurL: 'Card blur (frosted glass) · {n}',
   },
 
   hi: {
@@ -357,7 +359,7 @@ export const STRINGS = {
     hlColor: 'हाइलाइट',
     resetColors: 'थीम के रंग',
     wallpaper: 'वॉलपेपर',
-    dim: 'वॉलपेपर धुंधला · {n}%',
+    dim: 'वॉलपेपर मंद करें · {n}%',
     resetSettings: 'सभी सेटिंग्स रीसेट करें',
     resetSetConfirm: 'सभी सेटिंग्स डिफ़ॉल्ट करें?',
     wpNone: 'कोई नहीं',
@@ -479,6 +481,8 @@ export const STRINGS = {
     loadingWalls: 'वॉलपेपर लोड हो रहे हैं…',
     noWalls: 'अभी कोई वॉलपेपर नहीं है।',
     wallsError: 'वॉलपेपर लोड नहीं हो सके। इंटरनेट जाँचकर फिर कोशिश करें।',
+    cardT: 'कार्ड पारदर्शिता · {n}%',
+    cardBlurL: 'कार्ड धुंधलापन (फ्रॉस्टेड ग्लास) · {n}',
   },
 
   mr: {
@@ -719,5 +723,7 @@ export const STRINGS = {
     loadingWalls: 'वॉलपेपर लोड होत आहेत…',
     noWalls: 'अजून कोणतेही वॉलपेपर नाहीत.',
     wallsError: 'वॉलपेपर लोड होऊ शकले नाहीत. इंटरनेट तपासून पुन्हा प्रयत्न करा.',
+    cardT: 'कार्ड पारदर्शकता · {n}%',
+    cardBlurL: 'कार्ड धूसरता (फ्रॉस्टेड ग्लास) · {n}',
   },
 };

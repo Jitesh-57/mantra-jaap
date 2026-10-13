@@ -105,7 +105,7 @@ const st = loadState();
 if (st.day !== todayKey()) { st.day = todayKey(); st.todayCount = 0; }
 const save = () => { store(KEY, st); queueCloudSave(); };
 
-const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'bhakti', bg: '', text: '', hl: '', wallpaper: 'none', dim: 0.2, ts: 26, font: 'classic', sound: true, vibe: true };
+const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'bhakti', bg: '', text: '', hl: '', wallpaper: 'none', dim: 0.2, ts: 26, font: 'classic', sound: true, vibe: true, cardT: 0.4, cardBlur: 14 };
 // Settings are kept only for signed-in people; guests start from the defaults each visit.
 const keepSettings = () => !AUTH_ON || !!read(SIGNED_KEY);
 const S = { ...DEFAULT_SETTINGS, ...(keepSettings() ? read(SET_KEY) || {} : {}) };
@@ -250,6 +250,9 @@ function applyTheme() {
   const hl = S.hl || th.gold;
   set('--hl', hl); set('--hl-ink', luminance(hl) > 0.3 ? '#1a0f08' : '#ffffff');
   set('--ts', S.ts + 'px');
+  // over a wallpaper: how see-through and how frosted the panels are
+  set('--card-a', Math.round((1 - (S.cardT ?? 0.4)) * 100) + '%');
+  set('--card-blur', (S.cardBlur ?? 14) + 'px');
   root.toggleAttribute('data-light', !!th.light);
   root.dataset.font = S.font;
   document.querySelector('meta[name=theme-color]').content = bg;
@@ -1574,7 +1577,12 @@ function renderSettings() {
   $('tsLabel').textContent = t('textSize', { n: S.ts });
   $('dim').value = S.dim;
   $('dimLabel').textContent = t('dim', { n: Math.round(S.dim * 100) });
-  $('dimRow').hidden = S.wallpaper === 'none' || (S.wallpaper === 'custom' && !wpData);
+  const noWp = S.wallpaper === 'none' || (S.wallpaper === 'custom' && !wpData);
+  $('dimRow').hidden = $('cardRow').hidden = $('blurRow').hidden = noWp;
+  $('cardA').value = S.cardT ?? 0.4;
+  $('cardLabel').textContent = t('cardT', { n: Math.round((S.cardT ?? 0.4) * 100) });
+  $('cardBlur').value = S.cardBlur ?? 14;
+  $('blurLabel').textContent = t('cardBlurL', { n: S.cardBlur ?? 14 });
   saveSettings(); // keep the Save button's state in step
 
   const ts = $('themeSw');
@@ -1628,6 +1636,8 @@ for (const [id, k] of [['cBg', 'bg'], ['cText', 'text'], ['cHl', 'hl']]) {
 $('colorsReset').onclick = () => { S.bg = ''; S.text = ''; S.hl = ''; saveSettings(); applyTheme(); renderSettings(); };
 $('ts').addEventListener('input', (e) => { S.ts = +e.target.value; $('tsLabel').textContent = t('textSize', { n: S.ts }); saveSettings(); applyTheme(); });
 $('dim').addEventListener('input', (e) => { S.dim = +e.target.value; $('dimLabel').textContent = t('dim', { n: Math.round(S.dim * 100) }); saveSettings(); applyTheme(); });
+$('cardA').addEventListener('input', (e) => { S.cardT = +e.target.value; $('cardLabel').textContent = t('cardT', { n: Math.round(S.cardT * 100) }); saveSettings(); applyTheme(); });
+$('cardBlur').addEventListener('input', (e) => { S.cardBlur = +e.target.value; $('blurLabel').textContent = t('cardBlurL', { n: S.cardBlur }); saveSettings(); applyTheme(); });
 $('setSave').onclick = async () => {
   if (!settingsDirty()) { closeSheet('setSheet'); return; }
   // guests cannot keep settings: invite them to sign in instead
@@ -1903,6 +1913,23 @@ if (NATIVE) {
     else exitApp();
   });
 }
+
+// ============ tap feedback ============
+// a ripple spreads from the finger and a tiny tick, so every button feels pressable
+const PRESSABLE = '.btn, .tile, .item-main, .naam, .chip, .find, .sadhana, .wall-tile, .wall-mini, .wall-card, .lib-row, .icon-btn, .option, .swatch, .fab, .segmented button, .account-btn, .lib-head';
+document.addEventListener('pointerdown', (e) => {
+  const el = e.target.closest(PRESSABLE);
+  if (!el || el.disabled || el.closest('#ring')) return;
+  if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+  const r = el.getBoundingClientRect();
+  const size = Math.hypot(Math.max(e.clientX - r.left, r.right - e.clientX), Math.max(e.clientY - r.top, r.bottom - e.clientY)) * 2;
+  const rip = document.createElement('span');
+  rip.className = 'tap-rip';
+  rip.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px`;
+  el.append(rip);
+  setTimeout(() => rip.remove(), 600);
+  if (el.id !== 'mainBtn') vibrate(6); // the count button has its own feel
+}, { passive: true });
 
 // ============ start ============
 applyTheme();
