@@ -247,6 +247,9 @@ function applyTheme() {
   set('--text', th.text); set('--text-2', th.text2);
   set('--accent', th.accent); set('--accent-ink', th.accentInk); set('--gold', th.gold);
   set('--read', S.text || th.text);
+  // text that sits straight on the background (titles, header, hints) follows the chosen text colour too
+  set('--on-bg', S.text ? `color-mix(in srgb, ${S.text} 85%, transparent)` : th.text2);
+  set('--on-bg-strong', S.text || th.text);
   const hl = S.hl || th.gold;
   set('--hl', hl); set('--hl-ink', luminance(hl) > 0.3 ? '#1a0f08' : '#ffffff');
   set('--ts', S.ts + 'px');

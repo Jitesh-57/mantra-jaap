@@ -664,3 +664,8 @@ body.peek #setSheet .peeking {
   background: var(--surface); box-shadow: 0 8px 30px rgb(0 0 0 / .35);
 }
 #setSheet .sheet-panel, #setSheet { transition: background-color .2s; }
+
+/* ============ text directly on the background follows the chosen text colour ============ */
+.view > .appbar .brand b, .practice .appbar .brand b { color: var(--on-bg-strong); }
+.view > .appbar .brand small, .practice .appbar .brand small,
+.view .section-title, .view .lib-head, .view .live, .view .ring-of { color: var(--on-bg); }
