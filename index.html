@@ -312,6 +312,9 @@
         <span class="wall-card-head"><b data-t="wallpapersTitle"></b><small id="wallCount"></small><span class="see-all" data-t="seeAll"></span></span>
         <span class="wall-strip" id="wallStrip"><i></i><i></i><i></i><i></i></span>
       </button>
+      <label class="field peekable" id="dimRow"><span id="dimLabel"></span><input type="range" id="dim" min="0" max="0.9" step="0.05"></label>
+      <label class="field peekable" id="cardRow"><span id="cardLabel"></span><input type="range" id="cardA" min="0" max="0.9" step="0.05"></label>
+      <label class="field peekable" id="blurRow"><span id="blurLabel"></span><input type="range" id="cardBlur" min="0" max="30" step="1"></label>
       <div class="callout" id="guestNote" hidden>
         <p data-t="guestNote"></p>
         <button class="btn btn-primary" id="guestSignIn"><span data-t="signIn"></span></button>
@@ -351,9 +354,6 @@
         <button class="btn btn-ghost" id="colorsReset" style="align-self:flex-start;min-height:40px;padding:0 8px"><svg class="i i-sm"><use href="#i-reset"/></svg><span data-t="resetColors"></span></button>
       </div>
       <div class="field"><span data-t="wallpaper"></span><div class="swatches" id="wpSw"></div><input type="file" id="wpInput" accept="image/*" hidden></div>
-      <label class="field" id="dimRow"><span id="dimLabel"></span><input type="range" id="dim" min="0" max="0.9" step="0.05"></label>
-      <label class="field" id="cardRow"><span id="cardLabel"></span><input type="range" id="cardA" min="0" max="0.9" step="0.05"></label>
-      <label class="field" id="blurRow"><span id="blurLabel"></span><input type="range" id="cardBlur" min="0" max="30" step="1"></label>
       <div class="divider"></div>
       <a class="policy-link" href="privacy" target="_blank" rel="noopener" data-t="privacy"></a>
       <button class="policy-link" id="adPrivacyBtn" data-t="adPrivacy" hidden></button>

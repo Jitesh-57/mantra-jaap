@@ -1636,6 +1636,15 @@ for (const [id, k] of [['cBg', 'bg'], ['cText', 'text'], ['cHl', 'hl']]) {
 $('colorsReset').onclick = () => { S.bg = ''; S.text = ''; S.hl = ''; saveSettings(); applyTheme(); renderSettings(); };
 $('ts').addEventListener('input', (e) => { S.ts = +e.target.value; $('tsLabel').textContent = t('textSize', { n: S.ts }); saveSettings(); applyTheme(); });
 $('dim').addEventListener('input', (e) => { S.dim = +e.target.value; $('dimLabel').textContent = t('dim', { n: Math.round(S.dim * 100) }); saveSettings(); applyTheme(); });
+// while a wallpaper slider is dragged, Settings steps aside so the change shows on the real screen
+function peek(on, row) {
+  document.body.classList.toggle('peek', on);
+  $$('.peekable').forEach((r) => r.classList.toggle('peeking', on && r === row));
+}
+$$('.peekable input[type=range]').forEach((inp) => {
+  inp.addEventListener('pointerdown', () => peek(true, inp.closest('.peekable')));
+});
+for (const ev of ['pointerup', 'pointercancel', 'blur']) window.addEventListener(ev, () => { if (document.body.classList.contains('peek')) peek(false); });
 $('cardA').addEventListener('input', (e) => { S.cardT = +e.target.value; $('cardLabel').textContent = t('cardT', { n: Math.round(S.cardT * 100) }); saveSettings(); applyTheme(); });
 $('cardBlur').addEventListener('input', (e) => { S.cardBlur = +e.target.value; $('blurLabel').textContent = t('cardBlurL', { n: S.cardBlur }); saveSettings(); applyTheme(); });
 $('setSave').onclick = async () => {

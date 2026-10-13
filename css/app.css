@@ -655,3 +655,12 @@ button.policy-link { background: none; border: 0; font: inherit; font-size: 14px
 .naam .tap-rip { background: var(--accent); opacity: .25; }
 /* pressing wins over the hover lift */
 .tile:active, .item-main:active, .naam:active, .find:active, .sadhana:active, .wall-card:active, .lib-row:active, .option:active, .btn:active { transform: scale(.965); box-shadow: none; }
+
+/* ============ live preview while dragging a wallpaper slider ============ */
+body.peek #setSheet { background: transparent; animation: none; }
+body.peek #setSheet .sheet-panel { visibility: hidden; background: transparent; border-color: transparent; box-shadow: none; }
+body.peek #setSheet .peeking {
+  visibility: visible; position: relative; z-index: 2; padding: 12px 14px; border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent); box-shadow: 0 8px 30px rgb(0 0 0 / .35);
+}
+#setSheet .sheet-panel, #setSheet { transition: background-color .2s; }
