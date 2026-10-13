@@ -669,3 +669,25 @@ body.peek #setSheet .peeking {
 .view > .appbar .brand b, .practice .appbar .brand b { color: var(--on-bg-strong); }
 .view > .appbar .brand small, .practice .appbar .brand small,
 .view .section-title, .view .lib-head, .view .live, .view .ring-of { color: var(--on-bg); }
+
+/* ============ home sections: each group in its own panel ============ */
+.home-sec {
+  margin-top: 16px; padding: 14px 14px 16px; border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--surface) 55%, transparent); border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgb(0 0 0 / .04);
+}
+body.has-wp .home-sec { background: color-mix(in srgb, var(--surface) calc(var(--card-a, 60%) * .75), transparent); -webkit-backdrop-filter: blur(var(--card-blur, 14px)); backdrop-filter: blur(var(--card-blur, 14px)); }
+.sec-head { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; }
+.home-sec .section-title { margin: 0; font-size: 14px; letter-spacing: .05em; }
+.sec-ico {
+  display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 10px;
+  color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.sec-ico .i { width: 17px; height: 17px; }
+.sec-ico.om { font-family: var(--font-read); font-size: 18px; line-height: 1; padding-top: 2px; }
+.home-sec .lib-head { min-height: 30px; margin-bottom: 0; padding: 0; }
+.home-sec.lib:not(.closed) .lib-head { margin-bottom: 12px; }
+/* inside a section the list and tiles sit on the panel instead of being boxes of their own */
+.home-sec .list { background: var(--surface); border-color: color-mix(in srgb, var(--line) 70%, transparent); }
+.home-sec .naam-row { margin-bottom: -6px; }
+.naam-sec { margin-top: 16px; }

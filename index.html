@@ -69,8 +69,8 @@
     <button class="btn btn-primary btn-lg btn-block" id="heroBtn"><span data-t="continue"></span></button>
   </section>
 
-  <section class="section naam-sec">
-    <h2 class="section-title" data-t="naamJap"></h2>
+  <section class="section home-sec naam-sec">
+    <div class="sec-head"><span class="sec-ico om" aria-hidden="true">ॐ</span><h2 class="section-title" data-t="naamJap"></h2></div>
     <div class="naam-row" id="naamRow"></div>
   </section>
 
@@ -83,8 +83,9 @@
     <p class="sad-hint" id="sadHint" data-t="sadHint"></p>
   </section>
 
-  <section class="section lib" id="lib">
-    <button class="lib-head" id="libHead" aria-expanded="true" aria-controls="libBody">
+  <section class="section home-sec lib" id="lib">
+    <button class="lib-head sec-head" id="libHead" aria-expanded="true" aria-controls="libBody">
+      <span class="sec-ico" aria-hidden="true"><svg class="i"><use href="#i-book"/></svg></span>
       <h2 class="section-title" data-t="library"></h2>
       <span class="badge" id="libCount">0</span>
       <svg class="i chev"><use href="#i-chev"/></svg>
@@ -92,8 +93,8 @@
     <div class="lib-body" id="libBody"><div><div class="list" id="list"></div></div></div>
   </section>
 
-  <section class="section">
-    <h2 class="section-title" data-t="addNew"></h2>
+  <section class="section home-sec">
+    <div class="sec-head"><span class="sec-ico" aria-hidden="true"><svg class="i"><use href="#i-plus"/></svg></span><h2 class="section-title" data-t="addNew"></h2></div>
     <div class="add-grid">
       <button class="tile" id="addLibrary"><svg class="i"><use href="#i-book"/></svg><span><b data-t="addLibrary"></b><small data-t="addLibraryHint"></small></span></button>
       <button class="tile" id="addType"><svg class="i"><use href="#i-pen"/></svg><span><b data-t="addType"></b><small data-t="addTypeHint"></small></span></button>
