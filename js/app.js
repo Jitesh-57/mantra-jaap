@@ -1,7 +1,7 @@
 import { STRINGS } from './i18n.js';
 import { createTracker, wordKey, similarity } from './align.js';
 import { LIBRARY } from './library.js';
-import { DEITIES, GALLERY } from './content.js';
+import { listWallpapers, wallUrl } from './wallpapers.js';
 import { googleSearchUrl } from './online.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, ADMOB_BANNER_ID } from './config.js';
 import { connect } from './cloud.js';
@@ -421,79 +421,58 @@ function openStats() {
 $('sadhana').onclick = openStats;
 $('sadhana').onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStats(); } };
 
-// ----- wallpaper gallery (opened from Settings) -----
-const dName = (d) => { const x = DEITIES[d] || {}; return x[S.uiLang] || x.hi || d; };
-// a real picture, or the deity's colours and initial until the picture is added
-function art(el, deity, src) {
-  const d = DEITIES[deity] || { c: ['#c2410c', '#fdba74'], sym: 'ॐ' };
-  el.classList.toggle('ph', !src);
-  el.style.backgroundImage = src ? `url("${src}")` : `radial-gradient(circle at 30% 20%, ${d.c[1]}, transparent 60%), linear-gradient(160deg, ${d.c[0]}, #120a05)`;
-  el.dataset.sym = src ? '' : d.sym;
+// ----- wallpaper gallery (top of Settings) -----
+const galleryWp = (name) => ({ css: `url("${wallUrl(name)}")` });
+const isNewPic = (w) => w.added && Date.now() - new Date(w.added).getTime() < 30 * 864e5;
+function thumb(w, cls) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = cls;
+  const img = new Image();
+  img.loading = 'lazy'; img.decoding = 'async'; img.alt = w.name.replace(/\.[^.]+$/, '');
+  img.onload = () => b.classList.add('ready');
+  img.src = w.url;
+  b.append(img);
+  if (S.wallpaper === 'gal:' + w.name) b.classList.add('on');
+  b.onclick = () => openWall(w);
+  return b;
 }
-function galleryWp(id) {
-  const g = GALLERY.find((x) => x.id === id);
-  if (!g) return null;
-  const d = DEITIES[g.deity];
-  return { css: g.src ? `url("${g.src}")` : `radial-gradient(circle at 30% 20%, ${d.c[1]}, transparent 60%), linear-gradient(160deg, ${d.c[0]}, #120a05)` };
+// the card at the top of Settings: the newest pictures
+async function renderWallCard() {
+  const strip = $('wallStrip');
+  try {
+    const list = await listWallpapers();
+    strip.textContent = '';
+    list.slice(0, 4).forEach((w) => strip.append(thumb(w, 'wall-mini')));
+    $('wallCount').textContent = list.length ? t('wallCount', { n: list.length }) : '';
+  } catch (e) { console.error(e); }
 }
-const isNewPic = (g) => g.added && Date.now() - new Date(g.added).getTime() < 30 * 864e5;
-
-let wallFilter = 'all';
-function openWalls() { renderWalls(); openSheet('wallSheet'); }
-function wallGrid(title, items) {
-  if (!items.length) return null;
-  const sec = document.createElement('section');
-  sec.className = 'wall-sec';
-  sec.innerHTML = '<h3 class="section-title"></h3><div class="wall-grid"></div>';
-  sec.querySelector('h3').textContent = title;
-  const grid = sec.querySelector('.wall-grid');
-  for (const g of items) {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'wall-tile';
-    art(b, g.deity, g.src);
-    b.setAttribute('aria-label', dName(g.deity));
-    if (isNewPic(g)) b.insertAdjacentHTML('beforeend', `<span class="new">${t('newTag')}</span>`);
-    if (!g.src) b.insertAdjacentHTML('beforeend', `<span class="ph-name"></span>`), (b.querySelector('.ph-name').textContent = dName(g.deity));
-    b.onclick = () => openWall(g);
-    grid.append(b);
+async function openWalls() {
+  openSheet('wallSheet');
+  const grid = $('wallGrid'), note = $('wallNote');
+  grid.textContent = '';
+  note.hidden = false; note.className = 'note'; note.textContent = t('loadingWalls');
+  try {
+    const list = await listWallpapers();
+    note.hidden = !!list.length; note.textContent = t('noWalls');
+    for (const w of list) {
+      const b = thumb(w, 'wall-tile');
+      if (isNewPic(w)) b.insertAdjacentHTML('beforeend', `<span class="new">${t('newTag')}</span>`);
+      grid.append(b);
+    }
+  } catch (e) {
+    console.error(e);
+    note.className = 'note err'; note.textContent = t('wallsError');
   }
-  return sec;
-}
-function renderWalls() {
-  const row = $('deityRow');
-  row.textContent = '';
-  for (const d of ['all', ...Object.keys(DEITIES)]) {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'deity';
-    b.setAttribute('aria-pressed', d === wallFilter);
-    b.innerHTML = '<span class="av"></span><small></small>';
-    const first = GALLERY.find((g) => g.deity === d && g.src);
-    if (d === 'all') { b.querySelector('.av').textContent = 'ॐ'; b.querySelector('.av').classList.add('all'); }
-    else art(b.querySelector('.av'), d, first?.src);
-    b.querySelector('small').textContent = d === 'all' ? t('allGods') : dName(d);
-    b.onclick = () => { wallFilter = d; renderWalls(); };
-    row.append(b);
-  }
-  const body = $('wallBody');
-  body.textContent = '';
-  const add = (el) => el && body.append(el);
-  if (wallFilter === 'all') {
-    add(wallGrid(t('mostLiked'), [...GALLERY].sort((a, b) => (b.likes || 0) - (a.likes || 0)).slice(0, 6)));
-    add(wallGrid(t('newTag'), GALLERY.filter(isNewPic).slice(0, 6)));
-    for (const d of Object.keys(DEITIES)) add(wallGrid(dName(d), GALLERY.filter((g) => g.deity === d)));
-  } else add(wallGrid(dName(wallFilter), GALLERY.filter((g) => g.deity === wallFilter)));
 }
 let curWall = null;
-function openWall(g) {
-  curWall = g;
-  art($('wallImg'), g.deity, g.src);
-  $('wallImg').dataset.name = g.src ? '' : dName(g.deity);
-  $('wallSave').disabled = !g.src;
+function openWall(w) {
+  curWall = w;
+  $('wallImg').style.backgroundImage = `url("${w.url}")`;
   openSheet('wallView');
 }
 $('wallSet').onclick = () => {
   if (!curWall) return;
-  S.wallpaper = 'gal:' + curWall.id;
+  S.wallpaper = 'gal:' + curWall.name;
   if (keepSettings()) { store(SET_KEY, S); savedSnapshot = settingsSnapshot(); queueCloudSave(); }
   applyTheme();
   closeSheet('wallView');
@@ -501,22 +480,24 @@ $('wallSet').onclick = () => {
   if (!$('setSheet').hidden) { renderSettings(); saveSettings(); }
   toast(t('wallSetDone'));
 };
-$('wallSave').onclick = () => {
-  if (!curWall?.src) return;
-  const abs = new URL(curWall.src, NATIVE ? WEB_URL : location.href).href;
-  if (NATIVE) { openExternal(abs); return; } // the browser can save the picture
-  const a = document.createElement('a');
-  a.href = curWall.src; a.download = curWall.id + '.' + (curWall.src.split('.').pop() || 'jpg');
-  document.body.append(a); a.click(); a.remove();
+$('wallSave').onclick = async () => {
+  if (!curWall) return;
+  if (NATIVE) { openExternal(curWall.url); return; } // the browser can save the picture
+  try {
+    const blob = await (await fetch(curWall.url)).blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = curWall.name;
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) { window.open(curWall.url, '_blank', 'noopener'); }
 };
 $('wallShare').onclick = async () => {
   if (!curWall) return;
-  const url = curWall.src ? new URL(curWall.src, NATIVE ? WEB_URL : location.href).href : (NATIVE ? WEB_URL : location.href);
-  const title = `${dName(curWall.deity)} · ${t('brand')}`;
+  const title = t('brand');
   try {
-    if (NATIVE) return await nativeShare({ title, text: title, url });
-    if (navigator.share) return await navigator.share({ title, url });
-    await navigator.clipboard.writeText(url); toast(t('linkCopied'));
+    if (NATIVE) return await nativeShare({ title, text: title, url: curWall.url });
+    if (navigator.share) return await navigator.share({ title, url: curWall.url });
+    await navigator.clipboard.writeText(curWall.url); toast(t('linkCopied'));
   } catch (e) { /* cancelled */ }
 };
 $('openWalls').onclick = openWalls;
@@ -1572,6 +1553,7 @@ async function share(it) {
 // ============ settings ============
 function openSettings() {
   savedSnapshot = settingsSnapshot();
+  renderWallCard();
   renderSettings();
   saveSettings();
   openSheet('setSheet');
