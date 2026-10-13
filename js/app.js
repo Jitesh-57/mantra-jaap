@@ -1,6 +1,7 @@
 import { STRINGS } from './i18n.js';
 import { createTracker, wordKey, similarity } from './align.js';
 import { LIBRARY } from './library.js';
+import { DEITIES, GALLERY, STORIES } from './content.js';
 import { googleSearchUrl } from './online.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, ADMOB_BANNER_ID } from './config.js';
 import { connect } from './cloud.js';
@@ -253,7 +254,7 @@ function applyTheme() {
   root.dataset.font = S.font;
   document.querySelector('meta[name=theme-color]').content = bg;
 
-  const wp = S.wallpaper === 'custom' && wpData ? { css: `url("${wpData}")` } : WALLPAPERS[S.wallpaper];
+  const wp = S.wallpaper === 'custom' && wpData ? { css: `url("${wpData}")` } : S.wallpaper.startsWith('gal:') ? galleryWp(S.wallpaper.slice(4)) : WALLPAPERS[S.wallpaper];
   const body = document.body.style;
   if (!wp || !wp.css) {
     body.backgroundImage = `radial-gradient(120% 55% at 50% -12%, color-mix(in srgb, ${th.accent} ${light ? 10 : 15}%, transparent), transparent 62%)`;
@@ -287,7 +288,7 @@ function openSheet(id) {
   el.hidden = false;
   openSheets.push(el);
   document.body.classList.add('locked');
-  el.querySelector('.sheet-panel').scrollTop = 0;
+  const panel = el.querySelector('.sheet-panel'); if (panel) panel.scrollTop = 0;
   syncAds();
 }
 function closeSheet(el) {
@@ -360,6 +361,7 @@ function renderHome() {
   setLib(st.libOpen !== false);
   renderSadhana();
   renderNaam();
+  renderExplore();
 }
 
 // ----- my sadhana card and sheet -----
@@ -418,6 +420,150 @@ function openStats() {
 }
 $('sadhana').onclick = openStats;
 $('sadhana').onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStats(); } };
+
+// ----- stories and wallpapers -----
+const dName = (d) => { const x = DEITIES[d] || {}; return x[S.uiLang] || x.hi || d; };
+const loc = (o) => (o ? o[S.uiLang] || (S.uiLang === 'mr' ? o.hi : o.en) || o.hi || o.en : '');
+// a real picture, or the deity's colours and initial until the picture is added
+function art(el, deity, src) {
+  const d = DEITIES[deity] || { c: ['#c2410c', '#fdba74'], sym: 'ॐ' };
+  el.classList.toggle('ph', !src);
+  el.style.backgroundImage = src ? `url("${src}")` : `radial-gradient(circle at 30% 20%, ${d.c[1]}, transparent 60%), linear-gradient(160deg, ${d.c[0]}, #120a05)`;
+  el.dataset.sym = src ? '' : d.sym;
+}
+function galleryWp(id) {
+  const g = GALLERY.find((x) => x.id === id);
+  if (!g) return null;
+  const d = DEITIES[g.deity];
+  return { css: g.src ? `url("${g.src}")` : `radial-gradient(circle at 30% 20%, ${d.c[1]}, transparent 60%), linear-gradient(160deg, ${d.c[0]}, #120a05)` };
+}
+const isNewPic = (g) => g.added && Date.now() - new Date(g.added).getTime() < 30 * 864e5;
+
+function renderExplore() {
+  art($('exStoriesArt'), STORIES[0]?.deity, STORIES[0]?.img);
+  const best = [...GALLERY].sort((a, b) => (b.likes || 0) - (a.likes || 0))[0];
+  art($('exWallsArt'), best?.deity, best?.src);
+}
+
+function openStories() {
+  const box = $('storyList');
+  box.textContent = '';
+  STORIES.forEach((s, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'story-card' + (i === 0 ? ' big' : '');
+    b.innerHTML = '<span class="story-img"></span><span class="story-info"><b></b><small></small><span class="pill"></span></span>';
+    art(b.querySelector('.story-img'), s.deity, s.img);
+    b.querySelector('b').textContent = loc(s.title);
+    b.querySelector('small').textContent = loc(s.sub);
+    b.querySelector('.pill').textContent = t('readStory');
+    b.onclick = () => openStory(s);
+    box.append(b);
+  });
+  openSheet('storiesSheet');
+}
+let curStory = null;
+function openStory(s) {
+  curStory = s;
+  art($('storyHero'), s.deity, s.img);
+  $('storyTitle').textContent = loc(s.title);
+  $('storySub').textContent = loc(s.sub);
+  const box = $('storyText');
+  box.textContent = '';
+  box.lang = S.uiLang === 'en' ? 'en' : 'hi';
+  for (const para of loc(s.text).split(/\n\s*\n/)) { const p = document.createElement('p'); p.textContent = para.trim(); box.append(p); }
+  openSheet('storySheet');
+}
+$('storyShare').onclick = async () => {
+  if (!curStory) return;
+  const text = `${loc(curStory.title)}\n\n${loc(curStory.text)}\n\n— ${t('brand')}`;
+  try {
+    if (NATIVE) return await nativeShare({ title: loc(curStory.title), text, url: WEB_URL });
+    if (navigator.share) return await navigator.share({ title: loc(curStory.title), text });
+    await navigator.clipboard.writeText(text); toast(t('copied'));
+  } catch (e) { /* cancelled */ }
+};
+
+let wallFilter = 'all';
+function openWalls() { renderWalls(); openSheet('wallSheet'); }
+function wallGrid(title, items) {
+  if (!items.length) return null;
+  const sec = document.createElement('section');
+  sec.className = 'wall-sec';
+  sec.innerHTML = '<h3 class="section-title"></h3><div class="wall-grid"></div>';
+  sec.querySelector('h3').textContent = title;
+  const grid = sec.querySelector('.wall-grid');
+  for (const g of items) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'wall-tile';
+    art(b, g.deity, g.src);
+    b.setAttribute('aria-label', dName(g.deity));
+    if (isNewPic(g)) b.insertAdjacentHTML('beforeend', `<span class="new">${t('newTag')}</span>`);
+    if (!g.src) b.insertAdjacentHTML('beforeend', `<span class="ph-name"></span>`), (b.querySelector('.ph-name').textContent = dName(g.deity));
+    b.onclick = () => openWall(g);
+    grid.append(b);
+  }
+  return sec;
+}
+function renderWalls() {
+  const row = $('deityRow');
+  row.textContent = '';
+  for (const d of ['all', ...Object.keys(DEITIES)]) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'deity';
+    b.setAttribute('aria-pressed', d === wallFilter);
+    b.innerHTML = '<span class="av"></span><small></small>';
+    const first = GALLERY.find((g) => g.deity === d && g.src);
+    if (d === 'all') { b.querySelector('.av').textContent = 'ॐ'; b.querySelector('.av').classList.add('all'); }
+    else art(b.querySelector('.av'), d, first?.src);
+    b.querySelector('small').textContent = d === 'all' ? t('allGods') : dName(d);
+    b.onclick = () => { wallFilter = d; renderWalls(); };
+    row.append(b);
+  }
+  const body = $('wallBody');
+  body.textContent = '';
+  const add = (el) => el && body.append(el);
+  if (wallFilter === 'all') {
+    add(wallGrid(t('mostLiked'), [...GALLERY].sort((a, b) => (b.likes || 0) - (a.likes || 0)).slice(0, 6)));
+    add(wallGrid(t('newTag'), GALLERY.filter(isNewPic).slice(0, 6)));
+    for (const d of Object.keys(DEITIES)) add(wallGrid(dName(d), GALLERY.filter((g) => g.deity === d)));
+  } else add(wallGrid(dName(wallFilter), GALLERY.filter((g) => g.deity === wallFilter)));
+}
+let curWall = null;
+function openWall(g) {
+  curWall = g;
+  art($('wallImg'), g.deity, g.src);
+  $('wallImg').dataset.name = g.src ? '' : dName(g.deity);
+  $('wallSave').disabled = !g.src;
+  openSheet('wallView');
+}
+$('wallSet').onclick = () => {
+  if (!curWall) return;
+  S.wallpaper = 'gal:' + curWall.id;
+  if (keepSettings()) { store(SET_KEY, S); savedSnapshot = settingsSnapshot(); queueCloudSave(); }
+  applyTheme();
+  closeSheet('wallView');
+  toast(t('wallSetDone'));
+};
+$('wallSave').onclick = () => {
+  if (!curWall?.src) return;
+  const abs = new URL(curWall.src, NATIVE ? WEB_URL : location.href).href;
+  if (NATIVE) { openExternal(abs); return; } // the browser can save the picture
+  const a = document.createElement('a');
+  a.href = curWall.src; a.download = curWall.id + '.' + (curWall.src.split('.').pop() || 'jpg');
+  document.body.append(a); a.click(); a.remove();
+};
+$('wallShare').onclick = async () => {
+  if (!curWall) return;
+  const url = curWall.src ? new URL(curWall.src, NATIVE ? WEB_URL : location.href).href : (NATIVE ? WEB_URL : location.href);
+  const title = `${dName(curWall.deity)} · ${t('brand')}`;
+  try {
+    if (NATIVE) return await nativeShare({ title, text: title, url });
+    if (navigator.share) return await navigator.share({ title, url });
+    await navigator.clipboard.writeText(url); toast(t('linkCopied'));
+  } catch (e) { /* cancelled */ }
+};
+$('openStories').onclick = openStories;
+$('openWalls').onclick = openWalls;
 
 // ----- quick naam jap -----
 const NAAM = ['राधे राधे', 'राम', 'सीताराम', 'हरे कृष्ण', 'ॐ नमः शिवाय', 'जय श्री राम', 'राम कृष्ण हरी', 'श्री स्वामी समर्थ', 'ॐ', 'ਵਾਹਿਗੁਰੂ'];
