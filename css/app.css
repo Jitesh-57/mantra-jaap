@@ -693,3 +693,10 @@ body.has-wp .home-sec { background: color-mix(in srgb, var(--surface) calc(var(-
 .naam-sec { margin-top: 16px; }
 
 .view .home-sec .section-title, .view .home-sec .lib-head { color: var(--sec-title); }
+
+/* start panel for a mantra chanted before: just the two ways to chant */
+.start-summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 6px 8px 14px; border-radius: var(--r); background: var(--surface-2); color: var(--text-2); font-weight: 600; }
+.start-summary .btn { min-height: 38px; padding: 0 10px; font-size: 14px; }
+#startSheet.quick .option { min-height: 132px; }
+#startSheet.quick .option .check { display: none; }
+#startSheet.quick .option[aria-pressed="true"]::after { content: attr(data-last); position: absolute; top: 10px; right: 10px; font-size: 11px; font-weight: 700; color: var(--accent); }

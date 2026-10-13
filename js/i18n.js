@@ -242,6 +242,8 @@ export const STRINGS = {
     cardT: 'Card transparency · {n}%',
     cardBlurL: 'Card blur (frosted glass) · {n}',
     panelColor: 'Panels',
+    changeSetup: 'Change count & days',
+    lastUsed: 'LAST USED',
   },
 
   hi: {
@@ -485,6 +487,8 @@ export const STRINGS = {
     cardT: 'कार्ड पारदर्शिता · {n}%',
     cardBlurL: 'कार्ड धुंधलापन (फ्रॉस्टेड ग्लास) · {n}',
     panelColor: 'पैनल',
+    changeSetup: 'गिनती और दिन बदलें',
+    lastUsed: 'पिछली बार',
   },
 
   mr: {
@@ -728,5 +732,7 @@ export const STRINGS = {
     cardT: 'कार्ड पारदर्शकता · {n}%',
     cardBlurL: 'कार्ड धूसरता (फ्रॉस्टेड ग्लास) · {n}',
     panelColor: 'पॅनेल',
+    changeSetup: 'मोजणी आणि दिवस बदला',
+    lastUsed: 'मागील वेळी',
   },
 };

@@ -680,12 +680,15 @@ const DAY_PRESETS = [0, 7, 11, 21, 40, 108]; // 0 = no limit
 let startItem = null, startMode = null, startTarget = 108, startDays = 0;
 let countEditing = false, dayEditing = false;
 
+let startQuick = false;
 function openStart(item) {
   startItem = item;
   startMode = item.mode || null; // remembered from last time, still changeable
   startTarget = item.target;
   startDays = item.plan?.days || 0;
   countEditing = dayEditing = false;
+  // a mantra chanted before opens straight to the two ways of chanting; its count and days stay as they were
+  startQuick = !!item.mode;
   renderStart();
   openSheet('startSheet');
 }
@@ -736,7 +739,15 @@ function renderStart() {
   note.hidden = !msg;
   note.textContent = msg;
 
-  $$('.option', $('startSheet')).forEach((o) => o.setAttribute('aria-pressed', o.dataset.mode === startMode));
+  $('startSetup').hidden = startQuick;
+  $('startSummary').hidden = !startQuick;
+  $('startSheet').classList.toggle('quick', startQuick);
+  if (startQuick) {
+    const pi = planInfo(it);
+    $('startSumText').textContent = t('timesN', { n: startTarget }) + ' · ' + (pi && !pi.over ? t('dayOf', { d: pi.day, n: pi.n }) : startDays ? t('daysN', { n: startDays }) : t('noLimit'));
+  }
+  $$('.option', $('startSheet')).forEach((o) => { o.setAttribute('aria-pressed', o.dataset.mode === startMode); o.dataset.last = t('lastUsed'); });
+  $('beginBtn').hidden = startQuick;
   $('beginBtn').disabled = !startMode;
   $('beginBtn').textContent = startMode ? t('begin') : t('chooseMode');
 }
@@ -752,7 +763,14 @@ $('dayForm').addEventListener('submit', (e) => {
   if (!v) { $('dayInput').focus(); return; }
   startDays = v; dayEditing = false; renderStart();
 });
-$$('.option', $('startSheet')).forEach((o) => { o.onclick = () => { startMode = o.dataset.mode; renderStart(); }; });
+$$('.option', $('startSheet')).forEach((o) => {
+  o.onclick = () => {
+    startMode = o.dataset.mode;
+    if (startQuick) { $('beginBtn').onclick(); return; } // one tap starts chanting
+    renderStart();
+  };
+});
+$('startChange').onclick = () => { startQuick = false; renderStart(); };
 $('beginBtn').onclick = () => {
   const it = startItem;
   if (!it || !startMode) return;
