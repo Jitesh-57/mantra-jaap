@@ -5,7 +5,7 @@ import { listWallpapers, wallUrl } from './wallpapers.js';
 import { googleSearchUrl } from './online.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, ADMOB_BANNER_ID, DEFAULT_WALLPAPER } from './config.js';
 import { connect } from './cloud.js';
-import { NATIVE, WEB_URL, AUTH_CALLBACK, startNativeSpeech, nativeShare, onBackButton, exitApp, onAppLink, openExternal, closeExternal, nativeKeepAwake, initAds, setAdVisible, adPrivacyNeeded, showAdPrivacy } from './native.js';
+import { NATIVE, WEB_URL, AUTH_CALLBACK, startNativeSpeech, nativeShare, onBackButton, exitApp, onAppLink, openExternal, closeExternal, nativeKeepAwake, initAds, setAdVisible, adPrivacyNeeded, showAdPrivacy, DND_AVAILABLE, dndGranted, dndOpenSettings, dndOn, dndOff } from './native.js';
 
 // ============ constants ============
 const KEY = 'mantra-jaap-v3';
@@ -105,7 +105,7 @@ const st = loadState();
 if (st.day !== todayKey()) { st.day = todayKey(); st.todayCount = 0; }
 const save = () => { store(KEY, st); queueCloudSave(); };
 
-const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'bhakti', bg: '', text: '', hl: '', wallpaper: DEFAULT_WALLPAPER ? 'gal:' + DEFAULT_WALLPAPER : 'none', dim: 0.1, ts: 20, font: 'classic', sound: true, vibe: true, cardT: 0.35, cardBlur: 10 };
+const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'bhakti', bg: '', text: '', hl: '', wallpaper: DEFAULT_WALLPAPER ? 'gal:' + DEFAULT_WALLPAPER : 'none', dim: 0.1, ts: 20, font: 'classic', sound: true, vibe: true, cardT: 0.35, cardBlur: 10, dnd: false };
 // Settings are kept only for signed-in people; guests start from the defaults each visit.
 const keepSettings = () => !AUTH_ON || !!read(SIGNED_KEY);
 const S = { ...DEFAULT_SETTINGS, ...(keepSettings() ? read(SET_KEY) || {} : {}) };
@@ -993,6 +993,7 @@ const P = {
 
 function startPractice(item, mode) {
   P.item = item; P.mode = mode;
+  if (S.dnd && DND_AVAILABLE) dndOn();
   $('home').hidden = true;
   $('practice').hidden = false;
   $('practice').classList.toggle('long', isLong(item.text));
@@ -1007,6 +1008,7 @@ function startPractice(item, mode) {
 }
 function leavePractice() {
   stopAll();
+  if (DND_AVAILABLE) dndOff();
   $('practice').hidden = true;
   $('home').hidden = false;
   syncAds();
@@ -1605,6 +1607,8 @@ function renderSettings() {
   $$('#fontSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === S.font));
   $$('#soundSeg button').forEach((b) => b.setAttribute('aria-pressed', (b.dataset.v === 'on') === (S.sound !== false)));
   $$('#vibeSeg button').forEach((b) => b.setAttribute('aria-pressed', (b.dataset.v === 'on') === (S.vibe !== false)));
+  $('dndRow').hidden = !DND_AVAILABLE;
+  $$('#dndSeg button').forEach((b) => b.setAttribute('aria-pressed', (b.dataset.v === 'on') === !!S.dnd));
   const vl = $('voiceLang');
   if (!vl.options.length) for (const k in LANGS) vl.add(new Option(LANGS[k].name, k));
   vl.value = S.voiceLang;
@@ -1667,6 +1671,14 @@ $$('#uiLangSeg button').forEach((b) => { b.onclick = () => { S.uiLang = b.datase
 $$('#fontSeg button').forEach((b) => { b.onclick = () => { S.font = b.dataset.v; saveSettings(); applyTheme(); renderSettings(); }; });
 $$('#soundSeg button').forEach((b) => { b.onclick = () => { S.sound = b.dataset.v === 'on'; saveSettings(); renderSettings(); if (S.sound) beadClick(); }; });
 $$('#vibeSeg button').forEach((b) => { b.onclick = () => { S.vibe = b.dataset.v === 'on'; saveSettings(); renderSettings(); vibrate(30); }; });
+$$('#dndSeg button').forEach((b) => {
+  b.onclick = async () => {
+    S.dnd = b.dataset.v === 'on';
+    saveSettings(); renderSettings();
+    // Android asks the user once to allow the app to use Do Not Disturb
+    if (S.dnd && !(await dndGranted())) { toast(t('dndAllow')); setTimeout(dndOpenSettings, 900); }
+  };
+});
 $('voiceLang').onchange = (e) => {
   S.voiceLang = e.target.value;
   saveSettings();

@@ -19,6 +19,14 @@ const Browser = plugin('Browser');
 const SharePlugin = plugin('Share');
 const KeepAwake = plugin('KeepAwake');
 const AdMob = plugin('AdMob');
+const Dnd = plugin('Dnd');
+
+// ----- Do Not Disturb while chanting (Android app only) -----
+export const DND_AVAILABLE = !!Dnd;
+export const dndGranted = () => Dnd.status().then((r) => !!r.granted).catch(() => false);
+export const dndOpenSettings = () => Dnd.openSettings().catch(() => {});
+export const dndOn = () => Dnd?.enable().catch(() => {});
+export const dndOff = () => Dnd?.disable().catch(() => {});
 
 export const nativeShare = (data) => SharePlugin.share({ ...data, dialogTitle: data.title });
 export const onBackButton = (fn) => AppPlugin?.addListener('backButton', fn);

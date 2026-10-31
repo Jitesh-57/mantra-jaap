@@ -248,6 +248,9 @@ export const STRINGS = {
     advColors: 'Advanced colours',
     innerColor: 'Inner cards',
     accentColor: 'Buttons',
+    dndLabel: 'Silence notifications while chanting',
+    dndHint: 'Turns on Do Not Disturb while the chanting screen is open and puts your phone back as it was when you leave.',
+    dndAllow: 'Allow JapSadhna in Do Not Disturb access, then come back',
   },
 
   hi: {
@@ -497,6 +500,9 @@ export const STRINGS = {
     advColors: 'और रंग विकल्प',
     innerColor: 'अंदर के कार्ड',
     accentColor: 'बटन',
+    dndLabel: 'जप के समय सूचनाएँ बंद रखें',
+    dndHint: 'जप की स्क्रीन खुली रहने तक फ़ोन \'डू नॉट डिस्टर्ब\' में रहेगा, बाहर आते ही पहले जैसा हो जाएगा।',
+    dndAllow: '\'डू नॉट डिस्टर्ब\' एक्सेस में JapSadhna को अनुमति दें, फिर वापस आएँ',
   },
 
   mr: {
@@ -746,5 +752,8 @@ export const STRINGS = {
     advColors: 'अधिक रंग पर्याय',
     innerColor: 'आतील कार्ड',
     accentColor: 'बटणे',
+    dndLabel: 'जपाच्या वेळी सूचना बंद ठेवा',
+    dndHint: 'जपाची स्क्रीन उघडी असेपर्यंत फोन \'डू नॉट डिस्टर्ब\' मध्ये राहील, बाहेर येताच पूर्वीसारखा होईल.',
+    dndAllow: '\'डू नॉट डिस्टर्ब\' ॲक्सेसमध्ये JapSadhna ला परवानगी द्या, मग परत या',
   },
 };
