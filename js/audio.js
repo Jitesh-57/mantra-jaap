@@ -11,6 +11,10 @@ const AUDIO = /\.(mp3|m4a|aac|ogg|oga|opus|wav|webm)$/i;
 const fileUrl = (path) => `${SUPABASE_URL}/storage/v1/object/public/${AUDIO_BUCKET}/${path.split('/').map(encodeURIComponent).join('/')}`;
 export const trackTitle = (name) => name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
 
+// credits.json in the bucket: { "Mantra/Name.mp3": { artist, license, licenseUrl, source } }
+let creditsP = null;
+const credits = () => (creditsP ||= fetch(fileUrl('credits.json')).then((r) => (r.ok ? r.json() : {})).catch(() => ({})));
+
 const lists = {};
 /** Tracks in one folder, newest first: [{ name, title, kind, url }] */
 export function listTracks(kind) {
@@ -21,8 +25,11 @@ export function listTracks(kind) {
       body: JSON.stringify({ prefix: kind + '/', limit: 1000, offset: 0, sortBy: { column: 'created_at', order: 'desc' } }),
     })
       .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then((rows) => rows.filter((f) => f.id && AUDIO.test(f.name))
-        .map((f) => ({ name: f.name, title: trackTitle(f.name), kind, url: fileUrl(`${kind}/${f.name}`) })))
+      .then(async (rows) => {
+        const cr = await credits();
+        return rows.filter((f) => f.id && AUDIO.test(f.name))
+          .map((f) => ({ name: f.name, title: trackTitle(f.name), kind, url: fileUrl(`${kind}/${f.name}`), credit: cr[`${kind}/${f.name}`] || null }));
+      })
       .catch((e) => { delete lists[kind]; throw e; });
   }
   return lists[kind];
@@ -88,7 +95,7 @@ audio.addEventListener('error', () => player.emit());
 // ----- lock screen and notification controls -----
 const ART = [{ src: new URL('img/icon-512.png', location.href).href, sizes: '512x512', type: 'image/png' }];
 function setMeta(tr) {
-  const meta = { title: tr.title, artist: 'JapSadhna', album: tr.kind, artwork: ART };
+  const meta = { title: tr.title, artist: tr.credit?.artist || 'JapSadhna', album: tr.kind, artwork: ART };
   if (MS) MS.setMetadata(meta).catch(() => {});
   else if (webMS && window.MediaMetadata) webMS.metadata = new MediaMetadata(meta);
 }

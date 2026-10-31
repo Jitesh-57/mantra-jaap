@@ -546,8 +546,10 @@ function trackRow(tr, list, i) {
   b.type = 'button'; b.className = 'track';
   const on = player.track?.url === tr.url;
   b.classList.toggle('on', on);
-  b.innerHTML = `<span class="tr-ico">${icon(on && player.playing ? 'pause' : 'play')}</span><span class="tr-title"></span>`;
+  b.innerHTML = `<span class="tr-ico">${icon(on && player.playing ? 'pause' : 'play')}</span><span class="tr-text"><span class="tr-title"></span><small></small></span>`;
   b.querySelector('.tr-title').textContent = tr.title;
+  // the artists share these under Creative Commons: they are always credited
+  b.querySelector('small').textContent = tr.credit ? `${tr.credit.artist} · ${tr.credit.license}` : '';
   b.onclick = () => (on ? player.toggle() : player.play(list, i));
   return b;
 }
@@ -587,7 +589,7 @@ function renderPlayer() {
   document.body.classList.toggle('has-player', !!tr);
   if (!tr) return;
   $('mpTitle').textContent = tr.title;
-  $('mpKind').textContent = t(KIND_KEY[tr.kind]);
+  $('mpKind').textContent = tr.credit ? `${tr.credit.artist} · ${tr.credit.license}` : t(KIND_KEY[tr.kind]);
   $('mpPlay').querySelector('use').setAttribute('href', player.playing ? '#i-pause' : '#i-play');
   $('mpRepeat').dataset.mode = player.repeat;
   $('mpRepeat').setAttribute('aria-pressed', player.repeat !== 'off');

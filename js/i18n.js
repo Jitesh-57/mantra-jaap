@@ -265,6 +265,7 @@ export const STRINGS = {
     repeat_off: 'Repeat off',
     repeat_all: 'Repeat all',
     repeat_one: 'Repeat this one',
+    audioCredit: 'Recordings are shared by their artists under Creative Commons licences, shown under each title. Thank you to every artist. 🙏',
   },
 
   hi: {
@@ -531,6 +532,7 @@ export const STRINGS = {
     repeat_off: 'दोहराना बंद',
     repeat_all: 'सभी दोहराएँ',
     repeat_one: 'यही दोहराएँ',
+    audioCredit: 'ये रिकॉर्डिंग उनके कलाकारों ने क्रिएटिव कॉमन्स लाइसेंस के तहत साझा की हैं, जो हर शीर्षक के नीचे दिखाया गया है। सभी कलाकारों का धन्यवाद। 🙏',
   },
 
   mr: {
@@ -797,5 +799,6 @@ export const STRINGS = {
     repeat_off: 'पुन्हा वाजवणे बंद',
     repeat_all: 'सर्व पुन्हा',
     repeat_one: 'हेच पुन्हा',
+    audioCredit: 'ही रेकॉर्डिंग त्यांच्या कलाकारांनी क्रिएटिव्ह कॉमन्स परवान्याखाली शेअर केली आहेत, जो प्रत्येक शीर्षकाखाली दिसतो. सर्व कलाकारांचे आभार. 🙏',
   },
 };

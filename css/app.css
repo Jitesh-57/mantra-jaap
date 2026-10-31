@@ -759,7 +759,7 @@ body.has-wp .track { background: color-mix(in srgb, var(--inner, var(--surface))
 .mp-ico { display: grid; place-items: center; width: 38px; height: 38px; flex: none; border-radius: 12px; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); margin-right: 6px; }
 .mp-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .mp-info b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
-.mp-info small { color: var(--text-2); font-size: 12px; }
+.mp-info small { color: var(--text-2); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mini-player .icon-btn { width: 36px; height: 36px; flex: none; }
 .mini-player .mp-play { width: 42px; height: 42px; border-radius: 50%; color: var(--accent-ink); background: var(--accent); }
 .mini-player .mp-play .i { fill: currentColor; }
@@ -769,3 +769,7 @@ body.has-wp .track { background: color-mix(in srgb, var(--inner, var(--surface))
 #mpRepeat[data-mode="one"] .rep1 { display: block; }
 body.has-player .fab { bottom: calc(max(18px, var(--safe-area-inset-bottom, env(safe-area-inset-bottom))) + var(--ad-h, 0px) + 74px); }
 body.has-player .home-pad { height: calc(170px + var(--ad-h, 0px)); }
+
+.tr-text { min-width: 0; display: flex; flex-direction: column; }
+.tr-text small { color: var(--text-2); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.audio-credit { margin-top: 12px; font-size: 12px; }
