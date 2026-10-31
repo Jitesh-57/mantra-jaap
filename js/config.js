@@ -12,3 +12,7 @@ export const ADMOB_BANNER_ID = 'ca-app-pub-6299138657923728/4199181521';
 
 // The wallpaper new users start with (a file name in the GodWallpapers bucket).
 export const DEFAULT_WALLPAPER = 'Radha Krishna by the Misty Riverside.png';
+
+// Listen (mantras, bhajans, aartis from the BhaktiAudio bucket). Off for now; set to true to bring it back
+// (and reinstall @capgo/capacitor-media-session for lock-screen playback in the Android app).
+export const LISTEN_ENABLED = false;

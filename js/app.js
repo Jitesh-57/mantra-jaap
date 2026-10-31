@@ -4,7 +4,7 @@ import { LIBRARY } from './library.js';
 import { listWallpapers, wallUrl } from './wallpapers.js';
 import { AUDIO_KINDS, listTracks, player } from './audio.js';
 import { googleSearchUrl } from './online.js';
-import { SUPABASE_URL, SUPABASE_ANON_KEY, ADMOB_BANNER_ID, DEFAULT_WALLPAPER } from './config.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, ADMOB_BANNER_ID, DEFAULT_WALLPAPER, LISTEN_ENABLED } from './config.js';
 import { connect } from './cloud.js';
 import { NATIVE, WEB_URL, AUTH_CALLBACK, startNativeSpeech, nativeShare, onBackButton, exitApp, onAppLink, openExternal, closeExternal, nativeKeepAwake, initAds, setAdVisible, adPrivacyNeeded, showAdPrivacy, DND_AVAILABLE, dndGranted, dndOpenSettings, dndOn, dndOff } from './native.js';
 
@@ -572,6 +572,8 @@ async function fillTracks(box, note, limit) {
   }
 }
 function renderListenHome() {
+  document.querySelector('.listen-sec').hidden = !LISTEN_ENABLED;
+  if (!LISTEN_ENABLED) return;
   listenTabs($('listenTabs'), renderListenHome);
   fillTracks($('homeTracks'), null, 4);
 }
