@@ -3,7 +3,7 @@ import { createTracker, wordKey, similarity } from './align.js';
 import { LIBRARY } from './library.js';
 import { listWallpapers, wallUrl } from './wallpapers.js';
 import { googleSearchUrl } from './online.js';
-import { SUPABASE_URL, SUPABASE_ANON_KEY, ADMOB_BANNER_ID } from './config.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, ADMOB_BANNER_ID, DEFAULT_WALLPAPER } from './config.js';
 import { connect } from './cloud.js';
 import { NATIVE, WEB_URL, AUTH_CALLBACK, startNativeSpeech, nativeShare, onBackButton, exitApp, onAppLink, openExternal, closeExternal, nativeKeepAwake, initAds, setAdVisible, adPrivacyNeeded, showAdPrivacy } from './native.js';
 
@@ -105,7 +105,7 @@ const st = loadState();
 if (st.day !== todayKey()) { st.day = todayKey(); st.todayCount = 0; }
 const save = () => { store(KEY, st); queueCloudSave(); };
 
-const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'bhakti', bg: '', text: '', hl: '', wallpaper: 'none', dim: 0.2, ts: 22, font: 'classic', sound: true, vibe: true, cardT: 0.4, cardBlur: 14 };
+const DEFAULT_SETTINGS = { uiLang: '', voiceLang: 'hi', theme: 'bhakti', bg: '', text: '', hl: '', wallpaper: DEFAULT_WALLPAPER ? 'gal:' + DEFAULT_WALLPAPER : 'none', dim: 0.1, ts: 20, font: 'classic', sound: true, vibe: true, cardT: 0.35, cardBlur: 10 };
 // Settings are kept only for signed-in people; guests start from the defaults each visit.
 const keepSettings = () => !AUTH_ON || !!read(SIGNED_KEY);
 const S = { ...DEFAULT_SETTINGS, ...(keepSettings() ? read(SET_KEY) || {} : {}) };
@@ -115,6 +115,7 @@ if (!STRINGS[S.uiLang]) { const l = (navigator.language || '').slice(0, 2); S.ui
 if (!LANGS[S.voiceLang]) S.voiceLang = 'hi';
 if (!THEMES[S.theme]) S.theme = 'bhakti';
 if (S.dim === 0.5) S.dim = 0.2; // earlier default hid wallpapers too much
+if (!S.tsV2) { if (S.ts === 26 || S.ts === 22) S.ts = 20; S.tsV2 = true; } // smaller text for everyone once; later choices are kept
 let wpData = null;
 if (keepSettings()) { try { wpData = localStorage.getItem(WP_KEY); } catch (e) {} }
 // Changes apply straight away but are only kept when "Save settings" is pressed.
@@ -252,14 +253,21 @@ function applyTheme() {
   set('--line', S.panel ? `color-mix(in srgb, ${panel} 82%, ${edge})` : th.line);
   const flip = S.panel && panelLight !== !!th.light;
   const pText = flip ? (panelLight ? '#2b1d10' : '#f7ebdc') : th.text;
-  set('--text', pText); set('--text-2', flip ? (panelLight ? '#7d6650' : '#c7ae92') : th.text2);
-  set('--accent', th.accent); set('--accent-ink', th.accentInk); set('--gold', th.gold);
+  set('--text', pText); set('--text-2', flip ? (panelLight ? '#7d6650' : '#f1e1cc') : th.text2);
+  const acc = S.accent || th.accent;
+  set('--accent', acc); set('--accent-ink', S.accent ? (luminance(acc) > 0.45 ? '#1a0f08' : '#ffffff') : th.accentInk); set('--gold', th.gold);
+  // advanced: inner cards (tiles, mantra list, chips inside the panels) can have their own colour
+  root.toggleAttribute('data-inner', !!S.inner);
+  if (S.inner) {
+    const il = luminance(S.inner) > 0.4;
+    set('--inner', S.inner); set('--inner-text', il ? '#2b1d10' : '#f7ebdc'); set('--inner-text-2', il ? '#7d6650' : '#f1e1cc');
+  } else for (const k of ['--inner', '--inner-text', '--inner-text-2']) root.style.removeProperty(k);
   set('--read', S.text || pText);
   // text that sits straight on the background (titles, header, hints) follows the chosen text colour too
   set('--on-bg', S.text ? `color-mix(in srgb, ${S.text} 85%, transparent)` : th.text2);
   set('--on-bg-strong', S.text || th.text);
   // titles inside the home panels: the chosen text colour, else the panel's own soft text
-  set('--sec-title', S.text ? S.text : flip ? (panelLight ? '#7d6650' : '#c7ae92') : th.text2);
+  set('--sec-title', S.text ? S.text : flip ? (panelLight ? '#7d6650' : '#f1e1cc') : th.text2);
   const hl = S.hl || th.gold;
   set('--hl', hl); set('--hl-ink', luminance(hl) > 0.3 ? '#1a0f08' : '#ffffff');
   set('--ts', S.ts + 'px');
@@ -1603,6 +1611,8 @@ function renderSettings() {
   const th = THEMES[S.theme];
   $('cBg').value = S.bg || th.bg;
   $('cPanel').value = S.panel || th.surface;
+  $('cInner').value = S.inner || S.panel || th.surface;
+  $('cAccent').value = S.accent || th.accent;
   $('cText').value = S.text || th.text;
   $('cHl').value = S.hl || th.gold;
   $('ts').value = S.ts;
@@ -1627,7 +1637,7 @@ function renderSettings() {
     b.style.background = `linear-gradient(135deg, ${x.bg} 0 50%, ${x.accent} 50% 75%, ${x.gold} 75%)`;
     const s = document.createElement('span'); s.textContent = t(x.name);
     b.append(s);
-    b.onclick = () => { S.theme = k; S.bg = ''; S.panel = ''; S.text = ''; S.hl = ''; saveSettings(); applyTheme(); renderSettings(); };
+    b.onclick = () => { S.theme = k; S.bg = ''; S.panel = ''; S.text = ''; S.hl = ''; S.inner = ''; S.accent = ''; saveSettings(); applyTheme(); renderSettings(); };
     ts.append(b);
   }
   const ws = $('wpSw');
@@ -1662,10 +1672,11 @@ $('voiceLang').onchange = (e) => {
   saveSettings();
   if (recWanted) { stopRecognition(); startRecognition(); }
 };
-for (const [id, k] of [['cBg', 'bg'], ['cPanel', 'panel'], ['cText', 'text'], ['cHl', 'hl']]) {
+for (const [id, k] of [['cBg', 'bg'], ['cPanel', 'panel'], ['cText', 'text'], ['cHl', 'hl'], ['cInner', 'inner'], ['cAccent', 'accent']]) {
   $(id).addEventListener('input', (e) => { S[k] = e.target.value; saveSettings(); applyTheme(); });
 }
-$('colorsReset').onclick = () => { S.bg = ''; S.panel = ''; S.text = ''; S.hl = ''; saveSettings(); applyTheme(); renderSettings(); };
+$('advColorsBtn').onclick = () => { const open = $('advColors').hidden; $('advColors').hidden = !open; $('advColorsBtn').setAttribute('aria-expanded', open); };
+$('colorsReset').onclick = () => { S.bg = ''; S.panel = ''; S.text = ''; S.hl = ''; S.inner = ''; S.accent = ''; saveSettings(); applyTheme(); renderSettings(); };
 $('ts').addEventListener('input', (e) => { S.ts = +e.target.value; $('tsLabel').textContent = t('textSize', { n: S.ts }); saveSettings(); applyTheme(); });
 $('dim').addEventListener('input', (e) => { S.dim = +e.target.value; $('dimLabel').textContent = t('dim', { n: Math.round(S.dim * 100) }); saveSettings(); applyTheme(); });
 // while a wallpaper slider is dragged, Settings steps aside so the change shows on the real screen

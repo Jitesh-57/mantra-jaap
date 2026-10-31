@@ -244,6 +244,10 @@ export const STRINGS = {
     panelColor: 'Panels',
     changeSetup: 'Change count & days',
     lastUsed: 'LAST USED',
+    viewDetails: 'View mantra jaap details',
+    advColors: 'Advanced colours',
+    innerColor: 'Inner cards',
+    accentColor: 'Buttons',
   },
 
   hi: {
@@ -489,6 +493,10 @@ export const STRINGS = {
     panelColor: 'पैनल',
     changeSetup: 'गिनती और दिन बदलें',
     lastUsed: 'पिछली बार',
+    viewDetails: 'मंत्र जप का पूरा विवरण देखें',
+    advColors: 'और रंग विकल्प',
+    innerColor: 'अंदर के कार्ड',
+    accentColor: 'बटन',
   },
 
   mr: {
@@ -734,5 +742,9 @@ export const STRINGS = {
     panelColor: 'पॅनेल',
     changeSetup: 'मोजणी आणि दिवस बदला',
     lastUsed: 'मागील वेळी',
+    viewDetails: 'मंत्र जपाचा तपशील पाहा',
+    advColors: 'अधिक रंग पर्याय',
+    innerColor: 'आतील कार्ड',
+    accentColor: 'बटणे',
   },
 };

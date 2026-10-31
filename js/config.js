@@ -9,3 +9,6 @@ export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Ad unit "Home banner" (AdMob → Apps → JapSadhna → Ad units). Google's test banner for development:
 // ca-app-pub-3940256099942544/9214589741. The app ID is in android/app/src/main/res/values/strings.xml.
 export const ADMOB_BANNER_ID = 'ca-app-pub-6299138657923728/4199181521';
+
+// The wallpaper new users start with (a file name in the GodWallpapers bucket).
+export const DEFAULT_WALLPAPER = 'Radha Krishna by the Misty Riverside.png';

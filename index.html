@@ -59,14 +59,16 @@
 
   <button class="find" id="findBtn"><svg class="i"><use href="#i-search"/></svg><span data-t="findPrayer"></span></button>
 
-  <section class="hero" id="hero" hidden>
-    <div class="hero-label" data-t="continueLabel"></div>
-    <div class="hero-title" id="heroTitle"></div>
-    <div class="hero-text" id="heroText"></div>
-    <div class="bar"><i id="heroBar"></i></div>
-    <div class="hero-meta"><span id="heroMeta"></span><span id="heroToday"></span></div>
-    <span class="plan-pill" id="heroPlan" hidden style="margin:-4px 0 14px"></span>
-    <button class="btn btn-primary btn-lg btn-block" id="heroBtn"><span data-t="continue"></span></button>
+  <section class="section home-sec">
+    <div class="sec-head"><span class="sec-ico" aria-hidden="true"><svg class="i"><use href="#i-plus"/></svg></span><h2 class="section-title" data-t="addNew"></h2></div>
+    <div class="add-grid">
+      <button class="tile" id="addLibrary"><svg class="i"><use href="#i-book"/></svg><span><b data-t="addLibrary"></b><small data-t="addLibraryHint"></small></span></button>
+      <button class="tile" id="addType"><svg class="i"><use href="#i-pen"/></svg><span><b data-t="addType"></b><small data-t="addTypeHint"></small></span></button>
+      <button class="tile" id="addCamera"><svg class="i"><use href="#i-camera"/></svg><span><b data-t="addCamera"></b><small data-t="addCameraHint"></small></span></button>
+      <button class="tile" id="addPhoto"><svg class="i"><use href="#i-image"/></svg><span><b data-t="addPhoto"></b><small data-t="addPhotoHint"></small></span></button>
+    </div>
+    <input type="file" id="camInput" accept="image/*" capture="environment" hidden>
+    <input type="file" id="imgInput" accept="image/*" hidden>
   </section>
 
   <section class="section home-sec naam-sec">
@@ -81,6 +83,7 @@
     </div>
     <div class="week" id="sadWeek"></div>
     <p class="sad-hint" id="sadHint" data-t="sadHint"></p>
+    <div class="sad-more"><span data-t="viewDetails"></span><svg class="i i-sm"><use href="#i-chev"/></svg></div>
   </section>
 
   <section class="section home-sec lib" id="lib">
@@ -93,17 +96,16 @@
     <div class="lib-body" id="libBody"><div><div class="list" id="list"></div></div></div>
   </section>
 
-  <section class="section home-sec">
-    <div class="sec-head"><span class="sec-ico" aria-hidden="true"><svg class="i"><use href="#i-plus"/></svg></span><h2 class="section-title" data-t="addNew"></h2></div>
-    <div class="add-grid">
-      <button class="tile" id="addLibrary"><svg class="i"><use href="#i-book"/></svg><span><b data-t="addLibrary"></b><small data-t="addLibraryHint"></small></span></button>
-      <button class="tile" id="addType"><svg class="i"><use href="#i-pen"/></svg><span><b data-t="addType"></b><small data-t="addTypeHint"></small></span></button>
-      <button class="tile" id="addCamera"><svg class="i"><use href="#i-camera"/></svg><span><b data-t="addCamera"></b><small data-t="addCameraHint"></small></span></button>
-      <button class="tile" id="addPhoto"><svg class="i"><use href="#i-image"/></svg><span><b data-t="addPhoto"></b><small data-t="addPhotoHint"></small></span></button>
-    </div>
-    <input type="file" id="camInput" accept="image/*" capture="environment" hidden>
-    <input type="file" id="imgInput" accept="image/*" hidden>
+  <section class="hero" id="hero" hidden>
+    <div class="hero-label" data-t="continueLabel"></div>
+    <div class="hero-title" id="heroTitle"></div>
+    <div class="hero-text" id="heroText"></div>
+    <div class="bar"><i id="heroBar"></i></div>
+    <div class="hero-meta"><span id="heroMeta"></span><span id="heroToday"></span></div>
+    <span class="plan-pill" id="heroPlan" hidden style="margin:-4px 0 14px"></span>
+    <button class="btn btn-primary btn-lg btn-block" id="heroBtn"><span data-t="continue"></span></button>
   </section>
+
   <div class="home-pad"></div>
   <button class="fab" id="fab" data-t-label="settings"><svg class="i"><use href="#i-gear"/></svg></button>
 </main>
@@ -325,6 +327,11 @@
           <label><span data-t="panelColor"></span><input type="color" id="cPanel"></label>
           <label><span data-t="textColor"></span><input type="color" id="cText"></label>
           <label><span data-t="hlColor"></span><input type="color" id="cHl"></label>
+        </div>
+        <button class="adv-toggle" id="advColorsBtn" type="button" aria-expanded="false"><svg class="i i-sm"><use href="#i-sliders"/></svg><span data-t="advColors"></span><svg class="i i-sm chev"><use href="#i-chev"/></svg></button>
+        <div class="colors adv" id="advColors" hidden>
+          <label><span data-t="innerColor"></span><input type="color" id="cInner"></label>
+          <label><span data-t="accentColor"></span><input type="color" id="cAccent"></label>
         </div>
         <button class="btn btn-ghost" id="colorsReset" style="align-self:flex-start;min-height:40px;padding:0 8px"><svg class="i i-sm"><use href="#i-reset"/></svg><span data-t="resetColors"></span></button>
       </div>
