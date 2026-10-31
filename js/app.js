@@ -2,6 +2,7 @@ import { STRINGS } from './i18n.js';
 import { createTracker, wordKey, similarity } from './align.js';
 import { LIBRARY } from './library.js';
 import { listWallpapers, wallUrl } from './wallpapers.js';
+import { AUDIO_KINDS, listTracks, player } from './audio.js';
 import { googleSearchUrl } from './online.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, ADMOB_BANNER_ID, DEFAULT_WALLPAPER } from './config.js';
 import { connect } from './cloud.js';
@@ -386,6 +387,7 @@ function renderHome() {
   setLib(st.libOpen !== false);
   renderSadhana();
   renderNaam();
+  renderListenHome();
 }
 
 // ----- my sadhana card and sheet -----
@@ -525,6 +527,92 @@ $('wallShare').onclick = async () => {
   } catch (e) { /* cancelled */ }
 };
 $('openWalls').onclick = openWalls;
+
+// ----- listen: mantras, bhajans and aartis -----
+let listenKind = AUDIO_KINDS[0];
+const KIND_KEY = { Mantra: 'kMantra', Bhajan: 'kBhajan', Aarti: 'kAarti' };
+function listenTabs(box, onPick) {
+  box.textContent = '';
+  for (const k of AUDIO_KINDS) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = t(KIND_KEY[k]);
+    b.setAttribute('aria-pressed', k === listenKind);
+    b.onclick = () => { listenKind = k; onPick(); };
+    box.append(b);
+  }
+}
+function trackRow(tr, list, i) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'track';
+  const on = player.track?.url === tr.url;
+  b.classList.toggle('on', on);
+  b.innerHTML = `<span class="tr-ico">${icon(on && player.playing ? 'pause' : 'play')}</span><span class="tr-title"></span>`;
+  b.querySelector('.tr-title').textContent = tr.title;
+  b.onclick = () => (on ? player.toggle() : player.play(list, i));
+  return b;
+}
+async function fillTracks(box, note, limit) {
+  const kind = listenKind;
+  box.dataset.kind = kind;
+  if (note) { note.hidden = false; note.className = 'note'; note.textContent = t('loadingAudio'); }
+  try {
+    const list = await listTracks(kind);
+    if (box.dataset.kind !== kind) return;
+    box.textContent = '';
+    list.slice(0, limit || list.length).forEach((tr, i) => box.append(trackRow(tr, list, i)));
+    if (!list.length) box.innerHTML = `<p class="note">${t('noAudio')}</p>`;
+    if (note) note.hidden = true;
+  } catch (e) {
+    console.error(e);
+    box.textContent = '';
+    const msg = `<p class="note err">${t('audioError')}</p>`;
+    if (note) { note.hidden = false; note.className = 'note err'; note.textContent = t('audioError'); } else box.innerHTML = msg;
+  }
+}
+function renderListenHome() {
+  listenTabs($('listenTabs'), renderListenHome);
+  fillTracks($('homeTracks'), null, 4);
+}
+function renderListenAll() {
+  listenTabs($('listenTabsAll'), () => { renderListenAll(); renderListenHome(); });
+  fillTracks($('allTracks'), $('listenNote'));
+}
+$('listenAll').onclick = () => { renderListenAll(); openSheet('listenSheet'); };
+
+// mini player at the bottom; playback goes on with the screen locked
+let lastTrackUrl = null;
+function renderPlayer() {
+  const tr = player.track;
+  $('miniPlayer').hidden = !tr;
+  document.body.classList.toggle('has-player', !!tr);
+  if (!tr) return;
+  $('mpTitle').textContent = tr.title;
+  $('mpKind').textContent = t(KIND_KEY[tr.kind]);
+  $('mpPlay').querySelector('use').setAttribute('href', player.playing ? '#i-pause' : '#i-play');
+  $('mpRepeat').dataset.mode = player.repeat;
+  $('mpRepeat').setAttribute('aria-pressed', player.repeat !== 'off');
+  $('mpProg').style.width = player.duration ? (player.time / player.duration) * 100 + '%' : '0%';
+  // the play icons in the lists follow along (only when something changed)
+  const key = tr.url + player.playing;
+  if (key !== lastTrackUrl) {
+    lastTrackUrl = key;
+    for (const box of [$('homeTracks'), $('allTracks')]) $$('.track', box).forEach((row) => {
+      const on = row.querySelector('.tr-title').textContent === tr.title;
+      row.classList.toggle('on', on);
+      row.querySelector('.tr-ico').innerHTML = icon(on && player.playing ? 'pause' : 'play');
+    });
+  }
+}
+player.on(renderPlayer);
+$('mpPlay').onclick = () => player.toggle();
+$('mpNext').onclick = () => player.next();
+$('mpPrev').onclick = () => player.prev();
+$('mpRepeat').onclick = () => { player.cycleRepeat(); toast(t('repeat_' + player.repeat)); };
+$('mpClose').onclick = () => player.stop();
+$('miniPlayer').querySelector('.mp-bar').onclick = (e) => {
+  const r = e.currentTarget.getBoundingClientRect();
+  player.seek(((e.clientX - r.left) / r.width) * player.duration);
+};
 
 // ----- quick naam jap -----
 const NAAM = ['राधे राधे', 'राम', 'सीताराम', 'हरे कृष्ण', 'ॐ नमः शिवाय', 'जय श्री राम', 'राम कृष्ण हरी', 'श्री स्वामी समर्थ', 'ॐ', 'ਵਾਹਿਗੁਰੂ'];
@@ -994,6 +1082,7 @@ const P = {
 function startPractice(item, mode) {
   P.item = item; P.mode = mode;
   if (S.dnd && DND_AVAILABLE) dndOn();
+  if (mode === 'auto' && player.playing) player.toggle(); // the microphone must not hear the music
   $('home').hidden = true;
   $('practice').hidden = false;
   $('practice').classList.toggle('long', isLong(item.text));

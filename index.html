@@ -35,6 +35,10 @@
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></symbol>
   <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
   <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M5 5l10 7-10 7zM19 5v14"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M19 5L9 12l10 7zM5 5v14"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4M21 13v2a3 3 0 0 1-3 3H3"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
   <symbol id="i-timer" viewBox="0 0 24 24"><path d="M10 2h4M12 14l3-3"/><circle cx="12" cy="14" r="8"/></symbol>
   <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M9.9 9.9a3 3 0 1 0 4.2 4.2M10.7 5.1A10.4 10.4 0 0 1 12 5c7 0 10 7 10 7a13.2 13.2 0 0 1-1.7 2.7M6.6 6.6A13.5 13.5 0 0 0 2 12s3 7 10 7a9.7 9.7 0 0 0 5.4-1.6M2 2l20 20"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
@@ -76,6 +80,12 @@
     <div class="naam-row" id="naamRow"></div>
   </section>
 
+  <section class="section home-sec listen-sec">
+    <div class="sec-head"><span class="sec-ico" aria-hidden="true"><svg class="i"><use href="#i-music"/></svg></span><h2 class="section-title" data-t="listen"></h2><button class="see-all-btn" id="listenAll" data-t="seeAll"></button></div>
+    <div class="segmented listen-tabs" id="listenTabs"></div>
+    <div class="tracks" id="homeTracks"></div>
+  </section>
+
   <section class="sadhana" id="sadhana" role="button" tabindex="0">
     <div class="sad-top">
       <div class="sad-streak"><span class="flame" aria-hidden="true">🔥</span><b id="sadStreak">0</b><small id="sadStreakLbl"></small></div>
@@ -107,6 +117,16 @@
   </section>
 
   <div class="home-pad"></div>
+  <div class="mini-player" id="miniPlayer" hidden>
+    <div class="mp-bar"><i id="mpProg"></i></div>
+    <span class="mp-ico" aria-hidden="true"><svg class="i"><use href="#i-music"/></svg></span>
+    <div class="mp-info"><b id="mpTitle"></b><small id="mpKind"></small></div>
+    <button class="icon-btn" id="mpPrev" data-t-label="prevTrack"><svg class="i"><use href="#i-prev"/></svg></button>
+    <button class="icon-btn mp-play" id="mpPlay" data-t-label="playPause"><svg class="i"><use href="#i-play"/></svg></button>
+    <button class="icon-btn" id="mpNext" data-t-label="nextTrack"><svg class="i"><use href="#i-next"/></svg></button>
+    <button class="icon-btn" id="mpRepeat" data-t-label="repeat"><svg class="i"><use href="#i-repeat"/></svg><span class="rep1">1</span></button>
+    <button class="icon-btn" id="mpClose" data-t-label="close"><svg class="i"><use href="#i-x"/></svg></button>
+  </div>
   <button class="fab" id="fab" data-t-label="settings"><svg class="i"><use href="#i-gear"/></svg></button>
 </main>
 
@@ -292,6 +312,16 @@
       <button class="btn btn-secondary" id="wallSave"><svg class="i i-sm"><use href="#i-image"/></svg><span data-t="saveImage"></span></button>
       <button class="icon-btn boxed" id="wallShare" data-t-label="share"><svg class="i"><use href="#i-share"/></svg></button>
     </div>
+  </div>
+</div>
+
+<div class="sheet" id="listenSheet" hidden>
+  <div class="sheet-panel tall" role="dialog" aria-modal="true" aria-labelledby="listenTitle">
+    <div class="grabber"></div>
+    <div class="sheet-head"><h2 id="listenTitle" data-t="listen"></h2><button class="icon-btn" data-close data-t-label="close"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="segmented listen-tabs" id="listenTabsAll"></div>
+    <p class="note" id="listenNote" hidden></p>
+    <div class="tracks" id="allTracks"></div>
   </div>
 </div>
 
