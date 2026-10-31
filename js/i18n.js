@@ -112,7 +112,7 @@ export const STRINGS = {
     textSize: 'Text size · {n}',
     colors: 'Colours',
     bgColor: 'Screen',
-    textColor: 'Text',
+    textColor: 'All text',
     hlColor: 'Highlight',
     resetColors: 'Use theme colours',
     wallpaper: 'Wallpaper',
@@ -266,6 +266,10 @@ export const STRINGS = {
     repeat_all: 'Repeat all',
     repeat_one: 'Repeat this one',
     audioCredit: 'Recordings are shared by their artists under Creative Commons licences, shown under each title. Thank you to every artist. 🙏',
+    appNameColor: 'App name',
+    mainTextColor: 'Main text',
+    subTextColor: 'Sub text',
+    innerTextColor: 'Inner card text',
   },
 
   hi: {
@@ -380,7 +384,7 @@ export const STRINGS = {
     textSize: 'अक्षर का आकार · {n}',
     colors: 'रंग',
     bgColor: 'स्क्रीन',
-    textColor: 'पाठ',
+    textColor: 'सारा टेक्स्ट',
     hlColor: 'हाइलाइट',
     resetColors: 'थीम के रंग',
     wallpaper: 'वॉलपेपर',
@@ -533,6 +537,10 @@ export const STRINGS = {
     repeat_all: 'सभी दोहराएँ',
     repeat_one: 'यही दोहराएँ',
     audioCredit: 'ये रिकॉर्डिंग उनके कलाकारों ने क्रिएटिव कॉमन्स लाइसेंस के तहत साझा की हैं, जो हर शीर्षक के नीचे दिखाया गया है। सभी कलाकारों का धन्यवाद। 🙏',
+    appNameColor: 'ऐप का नाम',
+    mainTextColor: 'मुख्य टेक्स्ट',
+    subTextColor: 'छोटा टेक्स्ट',
+    innerTextColor: 'अंदर के कार्ड का टेक्स्ट',
   },
 
   mr: {
@@ -647,7 +655,7 @@ export const STRINGS = {
     textSize: 'अक्षरांचा आकार · {n}',
     colors: 'रंग',
     bgColor: 'स्क्रीन',
-    textColor: 'पाठ',
+    textColor: 'सर्व मजकूर',
     hlColor: 'हायलाइट',
     resetColors: 'थीमचे रंग',
     wallpaper: 'वॉलपेपर',
@@ -800,5 +808,9 @@ export const STRINGS = {
     repeat_all: 'सर्व पुन्हा',
     repeat_one: 'हेच पुन्हा',
     audioCredit: 'ही रेकॉर्डिंग त्यांच्या कलाकारांनी क्रिएटिव्ह कॉमन्स परवान्याखाली शेअर केली आहेत, जो प्रत्येक शीर्षकाखाली दिसतो. सर्व कलाकारांचे आभार. 🙏',
+    appNameColor: 'अ‍ॅपचे नाव',
+    mainTextColor: 'मुख्य मजकूर',
+    subTextColor: 'लहान मजकूर',
+    innerTextColor: 'आतील कार्डचा मजकूर',
   },
 };

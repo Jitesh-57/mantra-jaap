@@ -666,7 +666,7 @@ body.peek #setSheet .peeking {
 #setSheet .sheet-panel, #setSheet { transition: background-color .2s; }
 
 /* ============ text directly on the background follows the chosen text colour ============ */
-.view > .appbar .brand b, .practice .appbar .brand b { color: var(--on-bg-strong); }
+.view > .appbar .brand b, .practice .appbar .brand b { color: var(--app-name, var(--on-bg-strong)); }
 .view > .appbar .brand small, .practice .appbar .brand small,
 .view .section-title, .view .lib-head, .view .live, .view .ring-of { color: var(--on-bg); }
 
@@ -719,7 +719,8 @@ body.has-wp .home-sec { background: color-mix(in srgb, var(--surface) calc(var(-
 #setSheet .segmented button[aria-pressed="true"] { background: #fff; box-shadow: 0 1px 3px rgb(60 30 0 / .12); color: var(--text); }
 
 /* inner cards: tiles, the mantra list and chips inside the home panels */
-:root[data-inner] .home-sec :is(.tile, .list, .naam) { --text: var(--inner-text); --text-2: var(--inner-text-2); background: var(--inner); color: var(--text); }
+:root[data-inner] .home-sec :is(.tile, .list, .naam) { background: var(--inner); }
+:root[data-inner-text] .home-sec :is(.tile, .list, .naam) { --text: var(--inner-text); --text-2: var(--inner-text-2); color: var(--text); }
 :root[data-inner] .home-sec .naam { color: var(--accent); }
 body.has-wp :is(.tile, .list) { background: color-mix(in srgb, var(--inner, var(--surface)) var(--card-a, 60%), transparent); }
 body.has-wp .naam { background: color-mix(in srgb, var(--inner, var(--surface)) var(--card-a, 60%), transparent); }
@@ -729,7 +730,7 @@ body.has-wp :is(.tile, .list, .naam) {
 .adv-toggle { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 8px 2px; background: none; border: 0; color: var(--accent); font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; }
 .adv-toggle .chev { transition: transform .2s var(--ease); }
 .adv-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
-.colors.adv { grid-template-columns: repeat(2, 1fr); margin-top: 4px; }
+.colors.adv { grid-template-columns: repeat(3, 1fr); margin-top: 4px; row-gap: 12px; }
 
 /* ============ listen ============ */
 .see-all-btn { margin-left: auto; background: none; border: 0; padding: 4px 2px; font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); cursor: pointer; }
