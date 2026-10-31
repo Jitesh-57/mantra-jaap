@@ -329,7 +329,7 @@ function closeSheet(el) {
   if (!el || el.hidden) return;
   el.hidden = true;
   openSheets.splice(openSheets.indexOf(el), 1);
-  if (el.id === 'setSheet') { document.body.classList.remove('peek'); if (settingsDirty()) toast(t('notSaved')); }
+  if (el.id === 'setSheet') { setNav('navHome'); dispatchEvent(new Event('scroll')); document.body.classList.remove('peek'); if (settingsDirty()) toast(t('notSaved')); }
   if (!openSheets.length) document.body.classList.remove('locked');
   lastFocus?.focus?.({ preventScroll: true });
   syncAds();
@@ -647,7 +647,24 @@ function setLib(open) {
 }
 $('libHead').onclick = () => { st.libOpen = $('lib').classList.contains('closed'); save(); setLib(st.libOpen); };
 $('heroBtn').onclick = () => { const c = currentItem(); if (c) openStart(c); };
-$('fab').onclick = openSettings;
+// ----- bottom navigation: Home, My mantras, Settings -----
+let navLock = 0;
+function setNav(id) { $$('.nav-btn').forEach((b) => (b.id === id ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'))); }
+$('navHome').onclick = () => { window.scrollTo({ top: 0, behavior: 'smooth' }); setNav('navHome'); };
+$('navMantras').onclick = () => {
+  if ($('lib').classList.contains('closed')) { st.libOpen = true; save(); setLib(true); }
+  $('lib').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  replay($('lib'), 'flash');
+  setNav('navMantras');
+  navLock = Date.now() + 1200; // let the smooth scroll finish before following the scroll again
+};
+$('navSettings').onclick = () => { setNav('navSettings'); openSettings(); };
+// the highlighted button follows the scroll position
+addEventListener('scroll', () => {
+  if (!$('setSheet').hidden || $('home').hidden || Date.now() < navLock) return;
+  const r = $('lib').getBoundingClientRect();
+  setNav(scrollY > 40 && r.top < innerHeight * 0.8 && r.bottom > 120 ? 'navMantras' : 'navHome');
+}, { passive: true });
 $('addType').onclick = () => openEditor(null);
 $('addCamera').onclick = () => $('camInput').click();
 $('addPhoto').onclick = () => $('imgInput').click();

@@ -270,6 +270,8 @@ export const STRINGS = {
     mainTextColor: 'Main text',
     subTextColor: 'Sub text',
     innerTextColor: 'Inner card text',
+    navHome: 'Home',
+    navMantras: 'My Mantras',
   },
 
   hi: {
@@ -541,6 +543,8 @@ export const STRINGS = {
     mainTextColor: 'मुख्य टेक्स्ट',
     subTextColor: 'छोटा टेक्स्ट',
     innerTextColor: 'अंदर के कार्ड का टेक्स्ट',
+    navHome: 'होम',
+    navMantras: 'मेरे मंत्र',
   },
 
   mr: {
@@ -812,5 +816,7 @@ export const STRINGS = {
     mainTextColor: 'मुख्य मजकूर',
     subTextColor: 'लहान मजकूर',
     innerTextColor: 'आतील कार्डचा मजकूर',
+    navHome: 'होम',
+    navMantras: 'माझे मंत्र',
   },
 };
